@@ -12,6 +12,7 @@ target 'react_chat_app' do
     :hermes_enabled => false
   )
 
+
   target 'react_chat_appTests' do
     inherit! :complete
     # Pods for testing
