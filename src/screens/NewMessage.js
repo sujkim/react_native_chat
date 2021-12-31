@@ -15,33 +15,53 @@ import firestore from '@react-native-firebase/firestore';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import auth from '@react-native-firebase/auth';
-import SignIn from './SignIn';
-import {NavigationHelpersContext} from '@react-navigation/native';
 
-const message = () => {
+const NewMessage = ({navigation}) => {
+  const [to, onChangeTo] = useState(null);
   const [message, onChangeMessage] = useState(null);
+  const [receiver, setReceiver] = useState(null);
+  const [selected, setSelected] = useState(false);
   const user = auth().currentUser;
+
+  const searchUser = async () => {
+    await firestore()
+      .collection('users')
+      .where('email', '==', to.toLowerCase())
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(documentSnapshot => {
+          if (documentSnapshot.exists) {
+            console.log('yes', documentSnapshot.data());
+            setReceiver(documentSnapshot.data());
+          } else {
+            setReceiver({displayName: 'No results'});
+          }
+        });
+      });
+  };
 
   const sendMessage = () => {
     console.log('send');
     console.log(user, to, user.displayName, message, user.photoURL);
-    if (to && message) {
+    if (receiver && message) {
       firestore()
         .collection('chats')
         .add({
           fromTo: {
-            from: user.email,
-            to: to,
+            from: {displayName: user.displayName, photoURL: user.photoURL},
+            to: {
+              displayName: receiver.displayName,
+              photoURL: receiver.photoURL,
+            },
           },
           fromToArray: [user.email, to],
           name: user.displayName,
           message: message,
-          imageURL: user.photoURL,
-          // createdAt: firestore.FieldValue.serverTimestamp(),
-          createdAt: firestore.Timestamp.now(),
+          photoURL: user.photoURL,
+          createdAt: firestore.FieldValue.serverTimestamp(),
         })
         .then(() => {
-          navigation.navigate('Chat Detail', {user: user, to: to});
+          navigation.navigate('Chats');
         });
     }
 
@@ -68,14 +88,55 @@ const message = () => {
         </View>
         <View style={styles.toInput}>
           <Text>To: </Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={onChangeTo}
-            value={to}
-            placeholder="name@email.com"
-            autoCapitalize="none"
-          />
+          {selected ? (
+            <Text
+              style={{color: '#0f7d7d', fontWeight: 'bold', marginLeft: 10}}>
+              {receiver.displayName}
+            </Text>
+          ) : (
+            <TextInput
+              style={styles.input}
+              onChangeText={onChangeTo}
+              value={to}
+              placeholder="name@email.com"
+              autoCapitalize="none"
+              autoFocus={true}
+              onSubmitEditing={() => searchUser()}
+              returnKeyType="search"
+            />
+          )}
         </View>
+        {receiver && !selected ? (
+          <View>
+            <Pressable
+              onPress={() => {
+                setSelected(true);
+              }}>
+              <View style={styles.tile}>
+                <Image
+                  style={styles.image}
+                  source={{
+                    uri: receiver.photoURL,
+                  }}
+                />
+                <View>
+                  <Text style={{color: '#0f7d7d', fontWeight: 'bold'}}>
+                    {receiver.displayName}
+                  </Text>
+                  <Text style={{color: '#0f7d7d'}}>{receiver.email}</Text>
+                </View>
+                {/* <Image
+                source={require('../assets/add.png')}
+                style={{
+                  tintColor: '#0f7d7d',
+                  height: 20,
+                  width: 20,
+                }}
+              /> */}
+              </View>
+            </Pressable>
+          </View>
+        ) : null}
       </View>
       <SafeAreaView>
         <View style={styles.messageContainer}>
@@ -87,7 +148,7 @@ const message = () => {
             autoCapitalize="none"
           />
           <TouchableOpacity onPress={() => sendMessage()}>
-            <Image source={require('./assets/send.png')} style={styles.send} />
+            <Image source={require('../assets/send.png')} style={styles.send} />
           </TouchableOpacity>
           {/* </SafeAreaView> */}
         </View>
@@ -114,7 +175,9 @@ const styles = StyleSheet.create({
     padding: 20,
     // backgroundColor: 'red',
     flexDirection: 'row',
-    // borderWidth: 0.2,
+    borderBottomWidth: 0.2,
+    borderColor: 'grey',
+    marginHorizontal: 10,
   },
 
   input: {
@@ -134,6 +197,23 @@ const styles = StyleSheet.create({
     // backgroundColor: 'red',
     borderRadius: 20,
     alignSelf: 'center',
+  },
+
+  tile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    marginHorizontal: 10,
+    borderBottomWidth: 0.3,
+  },
+
+  image: {
+    height: 40,
+    width: 40,
+    borderRadius: 20,
+    marginRight: 20,
+    // resizeMode: 'contain',
+    backgroundColor: '#AEE1E1',
   },
 
   message: {

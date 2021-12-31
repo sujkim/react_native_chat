@@ -11,43 +11,71 @@ import {
   Image,
 } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
-import {NavigationHelpersContext} from '@react-navigation/native';
+import auth from '@react-native-firebase/auth';
 
 export default function ChatDetail({navigation, route}) {
   const [loading, setLoading] = useState(true);
   const [chats, setChats] = useState(['']);
   const [message, onChangeMessage] = useState(null);
-  const user = route.params.user;
-  const to = route.params.to;
+  const other = route.params.to;
+  const [user, setUser] = useState(null);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
-      title: to,
+      title: route.params.name,
     });
   });
 
   const chatsCollection = firestore().collection('chats');
 
+  // const sendMessage = () => {
+  //   if (to && message) {
+  //     firestore()
+  //       .collection('chats')
+  //       .add({
+  //         fromTo: {
+  //           from: user.email,
+  //           to: to,
+  //         },
+  //         fromToArray: [user.email, to],
+  //         name: user.displayName,
+  //         message: message,
+  //         imageURL: user.photoURL,
+  //         createdAt: firestore.FieldValue.serverTimestamp(),
+  //       });
+  //   }
+  //   onChangeMessage('');
+  // };
+
   const sendMessage = () => {
-    console.log(user, to, user.displayName, message, user.photoURL);
-    if (to && message) {
+    console.log('send');
+    console.log(user, other, user.displayName, message, user.photoURL);
+    if (receiver && message) {
       firestore()
         .collection('chats')
         .add({
           fromTo: {
-            from: user.email,
-            to: to,
+            from: {displayName: user.displayName, photoURL: user.photoURL},
+            to: {
+              displayName: receiver.displayName,
+              photoURL: receiver.photoURL,
+            },
           },
-          fromToArray: [user.email, to],
+          fromToArray: [user.email, other],
           name: user.displayName,
           message: message,
-          imageURL: user.photoURL,
+          photoURL: user.photoURL,
           createdAt: firestore.FieldValue.serverTimestamp(),
+        })
+        .then(() => {
+          navigation.navigate('Chats');
         });
     }
+    onChangeMessage('');
   };
 
   useEffect(() => {
+    const user = auth().currentUser;
     let isMounted = true;
     const chat = chatsCollection
       // .where('fromToArray', 'array-contains-any', [user.email, to])
@@ -60,20 +88,22 @@ export default function ChatDetail({navigation, route}) {
         querySnapshot.forEach(documentSnapshot => {
           // console.log(documentSnapshot.get('fromToArray')[0]);
           if (
-            (documentSnapshot.get('fromTo.from') == user.email &&
-              documentSnapshot.get('fromTo.to') == to) ||
-            (documentSnapshot.get('fromTo.from') == to &&
-              documentSnapshot.get('fromTo.to') == user.email)
+            (documentSnapshot.get('fromToArray')[0] == user.email &&
+              documentSnapshot.get('fromToArray')[1] == other) ||
+            (documentSnapshot.get('fromToArray')[0] == other &&
+              documentSnapshot.get('fromToArray')[1] == user.email)
           )
-            // console.log('working?');
-            // console.log(chats);
-            chats.push({
-              ...documentSnapshot.data(),
-              key: documentSnapshot.id,
-            });
+            console.log(chats);
+          chats.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id,
+          });
         });
-        if (isMounted) setChats(chats);
-        setLoading(false);
+        if (isMounted) {
+          setChats(chats);
+          setUser(user);
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -83,7 +113,11 @@ export default function ChatDetail({navigation, route}) {
   }, []);
 
   if (loading) {
-    return <ActivityIndicator />;
+    return (
+      <View style={{flex: 1, justifyContent: 'center'}}>
+        <ActivityIndicator />
+      </View>
+    );
   }
 
   return (
@@ -95,11 +129,23 @@ export default function ChatDetail({navigation, route}) {
             <View style={styles.container}>
               <View
                 style={
-                  item.fromTo.from == user.email ? styles.user : styles.tile
+                  item.fromTo[0] == user.email ? styles.user : styles.tile
                 }>
                 {/* <Text style={styles.main}>Name: {item.name}</Text> */}
                 <Image source={{uri: item.imageURL}} style={styles.image} />
-                <Text style={{padding: 10}}>{item.message}</Text>
+                <View
+                  style={
+                    item.fromTo.from == user.email
+                      ? styles.messageBackground
+                      : {
+                          marginLeft: 10,
+                          padding: 10,
+                          borderWidth: 0.3,
+                          borderRadius: 10,
+                        }
+                  }>
+                  <Text>{item.message}</Text>
+                </View>
 
                 {/* <Text>Time: {item.time}</Text> */}
               </View>
@@ -107,21 +153,21 @@ export default function ChatDetail({navigation, route}) {
           )}
         />
       </View>
-      <SafeAreaView>
-        <View style={styles.messageContainer}>
-          {/* <SafeAreaView> */}
-          <TextInput
-            style={styles.message}
-            onChangeText={onChangeMessage}
-            value={message}
-            autoCapitalize="none"
-          />
-          <TouchableOpacity onPress={() => sendMessage()}>
-            <Image source={require('./assets/send.png')} style={styles.send} />
-          </TouchableOpacity>
-          {/* </SafeAreaView> */}
-        </View>
-      </SafeAreaView>
+      {/* <SafeAreaView> */}
+      <View style={styles.messageContainer}>
+        {/* <SafeAreaView> */}
+        <TextInput
+          style={styles.message}
+          onChangeText={onChangeMessage}
+          value={message}
+          autoCapitalize="none"
+        />
+        <TouchableOpacity onPress={() => sendMessage()}>
+          <Image source={require('../assets/send.png')} style={styles.send} />
+        </TouchableOpacity>
+        {/* </SafeAreaView> */}
+      </View>
+      {/* </SafeAreaView> */}
     </View>
   );
 }
@@ -148,13 +194,21 @@ const styles = StyleSheet.create({
     margin: 10,
     padding: 10,
     // backgroundColor: 'red',
-    color: 'red',
+    // color: 'red',
     // borderBottomWidth: 0.2,
   },
 
   main: {
     // backgroundColor: 'red',
     marginLeft: 30,
+  },
+
+  messageBackground: {
+    marginLeft: 10,
+    marginRight: 10,
+    padding: 10,
+    backgroundColor: '#AEE1E1',
+    borderRadius: 10,
   },
 
   name: {
@@ -204,7 +258,8 @@ const styles = StyleSheet.create({
     // resizeMode: 'contain',
     height: 30,
     width: 30,
-    tintColor: '#22577E',
+    tintColor: '#5b8c8c',
+
     // padding: 10,
     // alignSelf: 'flex-end',
   },

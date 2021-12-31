@@ -159,18 +159,18 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    borderColor: '#22577E',
-    borderWidth: 1,
+    borderColor: '#FCD1D1',
+    borderWidth: 2,
     padding: 15,
     borderRadius: 10,
   },
 
   signUp: {
-    backgroundColor: '#22577E',
+    backgroundColor: '#FCD1D1',
   },
 
   signUpButtonText: {
-    color: 'white',
+    // color: 'white',
   },
 
   buttonText: {

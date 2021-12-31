@@ -11,7 +11,7 @@ import {
 
 import auth from '@react-native-firebase/auth';
 import {NavigationHelpersContext} from '@react-navigation/native';
-import SignIn from './SignIn';
+import SignIn from '../screens/SignIn';
 
 const signOut = () => {
   auth()
@@ -29,7 +29,8 @@ export default function signOutButton(user) {
   return (
     <Pressable onPress={() => signOut()}>
       <View style={styles.button}>
-        <Text style={{fontSize: 15, color: 'white'}}>Sign Out</Text>
+        <Image style={styles.image} source={require('../assets/logout.png')} />
+        {/* <Text style={{fontSize: 15, color: 'white'}}>Sign Out</Text> */}
       </View>
     </Pressable>
     // <View>
@@ -40,17 +41,18 @@ export default function signOutButton(user) {
 
 styles = StyleSheet.create({
   image: {
-    backgroundColor: 'blue',
-    width: 30,
-    height: 30,
-    // resizeMode: 'contain',
-    borderRadius: 20,
-    overflow: 'hidden',
+    // backgroundColor: 'blue',
+    width: 20,
+    height: 20,
+    resizeMode: 'contain',
+    // borderRadius: 20,
+    // overflow: 'hidden',
+    // tintColor: '#5b8c8c',
   },
 
   button: {
-    padding: 10,
-    backgroundColor: '#22577E',
-    borderRadius: 10,
+    // padding: 10,
+    // backgroundColor: '#22577E',
+    // borderRadius: 10,
   },
 });

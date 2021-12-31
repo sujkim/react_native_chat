@@ -15,13 +15,28 @@ import firestore from '@react-native-firebase/firestore';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import auth from '@react-native-firebase/auth';
-import SignIn from './SignIn';
-import {NavigationHelpersContext} from '@react-navigation/native';
 
 const NewMessage = ({navigation}) => {
   const [to, onChangeTo] = useState(null);
   const [message, onChangeMessage] = useState(null);
+  const [receiver, setReceiver] = useState(null);
   const user = auth().currentUser;
+
+  const searchUser = async () => {
+    console.log('searching');
+    const user = await firestore()
+      .collection('users')
+      .where('email', '==', to.toLowerCase())
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(documentSnapshot => {
+          if (documentSnapshot.exists) {
+            console.log('yes', documentSnapshot.data());
+            setReceiver(documentSnapshot.data());
+          }
+        });
+      });
+  };
 
   const sendMessage = () => {
     console.log('send');
@@ -41,8 +56,13 @@ const NewMessage = ({navigation}) => {
           createdAt: firestore.FieldValue.serverTimestamp(),
         })
         .then(() => {
-          navigation.navigate('Chat Detail', {user: user, to: to});
+          // navigation.navigate('Chat Detail', {user: user, to: to});
+
+          navigation.navigate('Chats');
         });
+      // .catch(error => {
+      //   console.log(error);
+      // });
     }
 
     // add the message to firebase
@@ -74,8 +94,31 @@ const NewMessage = ({navigation}) => {
             value={to}
             placeholder="name@email.com"
             autoCapitalize="none"
+            autoFocus={true}
+            onSubmitEditing={() => searchUser()}
+            returnKeyType="search"
           />
         </View>
+        {receiver ? (
+          <View
+            style={{
+              alignSelf: 'center',
+              borderWidth: 0.5,
+              padding: 30,
+              height: '50%',
+              width: '50%',
+              alignItems: 'center',
+            }}>
+            <Text>{receiver.displayName}</Text>
+            <Image
+              source={{uri: receiver.photoURL}}
+              style={{height: '50%', resizeMode: 'contain'}}
+            />
+            <TouchableOpacity>
+              <Text>Add</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </View>
       <SafeAreaView>
         <View style={styles.messageContainer}>
@@ -87,7 +130,7 @@ const NewMessage = ({navigation}) => {
             autoCapitalize="none"
           />
           <TouchableOpacity onPress={() => sendMessage()}>
-            <Image source={require('./assets/send.png')} style={styles.send} />
+            <Image source={require('../assets/send.png')} style={styles.send} />
           </TouchableOpacity>
           {/* </SafeAreaView> */}
         </View>
@@ -114,11 +157,12 @@ const styles = StyleSheet.create({
     padding: 20,
     // backgroundColor: 'red',
     flexDirection: 'row',
-    // borderWidth: 0.2,
+    // borderWidth: 2,
   },
 
   input: {
     paddingStart: 10,
+    // borderWidth: 2,
   },
   messageContainer: {
     // position: 'relative',

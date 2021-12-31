@@ -8,12 +8,13 @@ import {
 } from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
-import Chats from './src/Chats';
-import SignIn from './src/SignIn';
-import ChatDetail from './src/ChatDetail';
-import SignUp from './src/SignUp';
-import signOutButton from './src/signOutButton';
-import NewMessage from './src/NewMessage';
+import Chats from './src/screens/Chats';
+import SignIn from './src/screens/SignIn';
+import ChatDetail from './src/screens/ChatDetail';
+import SignUp from './src/screens/SignUp';
+import signOutButton from './src/components/signOutButton';
+import NewMessage from './src/screens/NewMessage';
+import SearchUser from './src/screens/SearchUser';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,7 +24,7 @@ function App() {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
   // const [noUser, set]
-
+  const headerColor = '#FCD1D1';
   // Handle user state changes
   function onAuthStateChanged(user) {
     // if (user) auth().currentUser.reload();
@@ -49,6 +50,7 @@ function App() {
             component={Chats}
             options={{
               headerTitle: '',
+              headerStyle: {backgroundColor: headerColor},
               headerTitleStyle: {fontSize: 25},
               headerRight: () => signOutButton(user),
             }}
@@ -57,11 +59,10 @@ function App() {
           <Stack.Screen
             name="Chat Detail"
             component={ChatDetail}
-            options={
-              {
-                // headerLeft: <Button title="Chats" onPress={() => <Chats />} />,
-              }
-            }
+            options={{
+              headerStyle: {backgroundColor: headerColor},
+              // headerLeft: <Button title="Chats" onPress={() => <Chats />} />,
+            }}
           />
           <Stack.Screen
             name="New Message"
@@ -69,6 +70,17 @@ function App() {
             options={{
               headerTitle: '',
               headerTitleStyle: {fontSize: 25},
+              headerStyle: {backgroundColor: headerColor},
+              // headerRight: () => signOutButton(user),
+            }}
+          />
+          <Stack.Screen
+            name="Search"
+            component={SearchUser}
+            options={{
+              headerTitle: '',
+              headerTitleStyle: {fontSize: 25},
+              headerStyle: {backgroundColor: headerColor},
               // headerRight: () => signOutButton(user),
             }}
           />
@@ -84,8 +96,18 @@ function App() {
     return (
       <NavigationContainer>
         <Stack.Navigator>
-          <Stack.Screen name="Sign In" component={SignIn} />
-          <Stack.Screen name="Sign Up" component={SignUp} />
+          <Stack.Screen
+            name="Sign In"
+            component={SignIn}
+            options={{
+              headerStyle: {backgroundColor: headerColor},
+            }}
+          />
+          <Stack.Screen
+            name="Sign Up"
+            component={SignUp}
+            options={{headerStyle: {backgroundColor: headerColor}}}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     );

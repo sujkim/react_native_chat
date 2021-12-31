@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import auth, {updateProfile} from '@react-native-firebase/auth';
-
+import firestore from '@react-native-firebase/firestore';
 import {launchImageLibrary} from 'react-native-image-picker';
 import Chats from './Chats';
 
@@ -42,14 +42,23 @@ function SignUp() {
         return;
       }
       console.error(error);
+      // update user profile with display name and avatar, add to database
     } finally {
       await auth().currentUser.updateProfile({
         displayName: name,
         photoURL: image,
       });
       await auth().currentUser.reload();
-      return <Chats user={auth().currentUser} />;
+      addUser();
+      // return <Chats user={auth().currentUser} />;
+      return <Chats />;
     }
+  };
+
+  const addUser = async () => {
+    await firestore()
+      .collection('users')
+      .add({email: email.toLowerCase(), displayName: name, photoURL: image});
   };
 
   return (
@@ -61,7 +70,7 @@ function SignUp() {
           <Image source={{uri: image}} style={styles.image} />
           <Pressable onPress={() => chooseImage()}>
             <Image
-              source={require('./assets/add.png')}
+              source={require('../assets/add.png')}
               style={styles.addButton}
             />
           </Pressable>
@@ -152,7 +161,7 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    backgroundColor: '#70a1c4',
+    backgroundColor: '#FCD1D1',
     width: 150,
     height: 150,
     borderRadius: 75,
@@ -172,7 +181,7 @@ const styles = StyleSheet.create({
 
   button: {
     width: '80%',
-    backgroundColor: '#22577E',
+    backgroundColor: '#FCD1D1',
     padding: 15,
     borderRadius: 10,
     // justifyContent: 'center',
@@ -181,6 +190,6 @@ const styles = StyleSheet.create({
   buttonText: {
     textAlign: 'center',
     fontSize: 16,
-    color: 'white',
+    // color: 'white',
   },
 });
