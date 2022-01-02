@@ -14,7 +14,6 @@ import ChatDetail from './src/screens/ChatDetail';
 import SignUp from './src/screens/SignUp';
 import signOutButton from './src/components/signOutButton';
 import NewMessage from './src/screens/NewMessage';
-import SearchUser from './src/screens/SearchUser';
 
 const Stack = createNativeStackNavigator();
 
@@ -40,8 +39,6 @@ function App() {
   if (initializing) return null;
 
   if (user) {
-    // console.log(user);
-    // return <Chats />;
     return (
       <NavigationContainer>
         <Stack.Navigator>
@@ -67,16 +64,6 @@ function App() {
           <Stack.Screen
             name="New Message"
             component={NewMessage}
-            options={{
-              headerTitle: '',
-              headerTitleStyle: {fontSize: 25},
-              headerStyle: {backgroundColor: headerColor},
-              // headerRight: () => signOutButton(user),
-            }}
-          />
-          <Stack.Screen
-            name="Search"
-            component={SearchUser}
             options={{
               headerTitle: '',
               headerTitleStyle: {fontSize: 25},

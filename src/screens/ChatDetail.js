@@ -17,65 +17,40 @@ export default function ChatDetail({navigation, route}) {
   const [loading, setLoading] = useState(true);
   const [chats, setChats] = useState(['']);
   const [message, onChangeMessage] = useState(null);
-  const other = route.params.to;
-  const [user, setUser] = useState(null);
+  const user = auth().currentUser;
+  const name = route.params.details.displayName;
+  const photoURL = route.params.details.photoURL;
+  const email = route.params.email;
+  console.log('params details', name, photoURL, email);
+  const chatsCollection = firestore().collection('chats');
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
-      title: route.params.name,
+      title: name,
     });
   });
 
-  const chatsCollection = firestore().collection('chats');
-
-  // const sendMessage = () => {
-  //   if (to && message) {
-  //     firestore()
-  //       .collection('chats')
-  //       .add({
-  //         fromTo: {
-  //           from: user.email,
-  //           to: to,
-  //         },
-  //         fromToArray: [user.email, to],
-  //         name: user.displayName,
-  //         message: message,
-  //         imageURL: user.photoURL,
-  //         createdAt: firestore.FieldValue.serverTimestamp(),
-  //       });
-  //   }
-  //   onChangeMessage('');
-  // };
-
   const sendMessage = () => {
     console.log('send');
-    console.log(user, other, user.displayName, message, user.photoURL);
-    if (receiver && message) {
-      firestore()
-        .collection('chats')
-        .add({
-          fromTo: {
-            from: {displayName: user.displayName, photoURL: user.photoURL},
-            to: {
-              displayName: receiver.displayName,
-              photoURL: receiver.photoURL,
-            },
-          },
-          fromToArray: [user.email, other],
-          name: user.displayName,
-          message: message,
-          photoURL: user.photoURL,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-        })
-        .then(() => {
-          navigation.navigate('Chats');
-        });
-    }
+    // console.log(user, other, user.displayName, message, user.photoURL);
+    chatsCollection.add({
+      fromTo: {
+        from: {displayName: user.displayName, photoURL: user.photoURL},
+        to: {
+          displayName: name,
+          photoURL: photoURL,
+        },
+      },
+      fromToArray: [user.email, email],
+      name: user.displayName,
+      message: message,
+      photoURL: user.photoURL,
+      createdAt: firestore.FieldValue.serverTimestamp(),
+    });
     onChangeMessage('');
   };
 
   useEffect(() => {
-    const user = auth().currentUser;
     let isMounted = true;
     const chat = chatsCollection
       // .where('fromToArray', 'array-contains-any', [user.email, to])
@@ -86,22 +61,22 @@ export default function ChatDetail({navigation, route}) {
         const chats = [];
 
         querySnapshot.forEach(documentSnapshot => {
-          // console.log(documentSnapshot.get('fromToArray')[0]);
+          console.log('testing', documentSnapshot.get('fromToArray')[0]);
           if (
             (documentSnapshot.get('fromToArray')[0] == user.email &&
-              documentSnapshot.get('fromToArray')[1] == other) ||
-            (documentSnapshot.get('fromToArray')[0] == other &&
+              documentSnapshot.get('fromToArray')[1] == email) ||
+            (documentSnapshot.get('fromToArray')[0] == email &&
               documentSnapshot.get('fromToArray')[1] == user.email)
-          )
+          ) {
             console.log(chats);
-          chats.push({
-            ...documentSnapshot.data(),
-            key: documentSnapshot.id,
-          });
+            chats.push({
+              ...documentSnapshot.data(),
+              key: documentSnapshot.id,
+            });
+          }
         });
         if (isMounted) {
           setChats(chats);
-          setUser(user);
           setLoading(false);
         }
       });
@@ -129,13 +104,13 @@ export default function ChatDetail({navigation, route}) {
             <View style={styles.container}>
               <View
                 style={
-                  item.fromTo[0] == user.email ? styles.user : styles.tile
+                  item.fromToArray[0] == user.email ? styles.user : styles.tile
                 }>
-                {/* <Text style={styles.main}>Name: {item.name}</Text> */}
-                <Image source={{uri: item.imageURL}} style={styles.image} />
+                {console.log('in the thing', item.photoURL)}
+                <Image source={{uri: item.photoURL}} style={styles.image} />
                 <View
                   style={
-                    item.fromTo.from == user.email
+                    item.fromToArray[0] == user.email
                       ? styles.messageBackground
                       : {
                           marginLeft: 10,

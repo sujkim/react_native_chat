@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
   Pressable,
+  RefreshControlBase,
 } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -15,53 +16,32 @@ import auth from '@react-native-firebase/auth';
 import SignIn from './SignIn';
 import ChatDetail from './ChatDetail';
 
-// const newMessage = ({navigation: {navigate}}) => {
-//   // return <NewMessage />;
-//   userID = auth().currentUser.getIdToken();
-//   console.log('new message');
-//   navigate('NewMessage');
-// };
-
 const Chats = ({navigation: {navigate}}) => {
   const [loading, setLoading] = useState(true);
-  // const [chats, setChats] = useState([]);
-  // const [users, setUsers] = useState([]);
-
   const [conversations, setConversations] = useState([]);
   const user = auth().currentUser;
-
-  const signOut = () => {
-    auth()
-      .signOut()
-      .then(() => {
-        console.log('Signed Out!');
-        return <SignIn />;
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  };
-
   const chatsCollection = firestore().collection('chats');
 
   useEffect(() => {
     let isMounted = true;
 
     const chat = chatsCollection
-      // .orderBy('createdAt', 'desc')
-      .where('fromToArray', 'array-contains', user.email)
-
+      .orderBy('createdAt', 'desc')
       .onSnapshot({includeMetadataChanges: true}, querySnapshot => {
         const chats = [];
         const users = [];
         const conversations = [];
         if (!querySnapshot.metadata.hasPendingWrites)
           querySnapshot.forEach(documentSnapshot => {
-            // console.log(chats);
-            chats.push({
-              ...documentSnapshot.data(),
-              key: documentSnapshot.id,
-            });
+            if (
+              documentSnapshot.get('fromToArray')[0] == user.email ||
+              documentSnapshot.get('fromToArray')[1] == user.email
+            ) {
+              chats.push({
+                ...documentSnapshot.data(),
+                key: documentSnapshot.id,
+              });
+            }
             chats.map(item => {
               const from = item['fromToArray'][0];
               const to = item['fromToArray'][1];
@@ -74,17 +54,12 @@ const Chats = ({navigation: {navigate}}) => {
                 conversations.push(item);
               }
             });
-
-            // if (Object.values(chats))
           });
 
         if (isMounted) {
           setConversations(conversations);
-          console.log('user', user);
-          console.log('converstaions', conversations);
-          console.log('users', users);
+          setLoading(false);
         }
-        setLoading(false);
       });
 
     return () => {
@@ -94,7 +69,11 @@ const Chats = ({navigation: {navigate}}) => {
   }, []);
 
   if (loading) {
-    return <ActivityIndicator />;
+    return (
+      <View style={{flex: 1, justifyContent: 'center'}}>
+        <ActivityIndicator />
+      </View>
+    );
   }
 
   return (
@@ -137,15 +116,14 @@ const Chats = ({navigation: {navigate}}) => {
               <Pressable
                 onPress={() =>
                   navigate('Chat Detail', {
-                    user: user,
-                    to:
-                      item.fromTo.from == user.email
+                    email:
+                      item.fromToArray[0] == user.email
                         ? item.fromToArray[1]
                         : item.fromToArray[0],
-                    name:
-                      item.fromTo.from == user.email
-                        ? item.fromTo.to.displayName
-                        : item.fromTo.from.displayName,
+                    details:
+                      item.fromToArray[0] == user.email
+                        ? item.fromTo.to
+                        : item.fromTo.from,
                   })
                 }>
                 <View style={styles.tile}>
@@ -153,7 +131,7 @@ const Chats = ({navigation: {navigate}}) => {
                     <Image
                       source={{
                         uri:
-                          item.fromTo.from == user.email
+                          item.fromToArray[0] == user.email
                             ? item.fromTo.to.photoURL
                             : item.fromTo.from.photoURL,
                       }}
@@ -161,13 +139,11 @@ const Chats = ({navigation: {navigate}}) => {
                     />
                     <View style={styles.main}>
                       <Text style={styles.name}>
-                        {/* {item.fromTo.from == user.email
-                          ? item.fromTo.to
-                          : item.fromTo.from} */}
-                        {item.name}
-                        {/* {console.log(item.name)} */}
+                        {item.fromToArray[0] == user.email
+                          ? item.fromTo.to.displayName
+                          : item.fromTo.from.displayName}
                       </Text>
-                      {/* <Text>{item.message}</Text> */}
+                      <Text>{item.message}</Text>
                     </View>
                   </View>
                   <View style={{justifyContent: 'center'}}>
