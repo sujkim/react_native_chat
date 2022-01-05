@@ -23,7 +23,7 @@ function App() {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
 
-  const headerColor = '#FCD1D1';
+  const headerColor = '#FFE2E2';
   // Handle user state changes
   function onAuthStateChanged(user) {
     setUser(user);

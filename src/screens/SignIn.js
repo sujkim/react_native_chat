@@ -121,6 +121,7 @@ const SignIn = ({navigation: {navigate}}) => {
 
 export default SignIn;
 
+const buttonColor = '#8785A2';
 const styles = StyleSheet.create({
   header: {
     width: '100%',
@@ -168,18 +169,18 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    borderColor: '#FCD1D1',
+    borderColor: buttonColor,
     borderWidth: 2,
     padding: 15,
     borderRadius: 10,
   },
 
   signUp: {
-    backgroundColor: '#FCD1D1',
+    backgroundColor: buttonColor,
   },
 
   signUpButtonText: {
-    // color: 'white',
+    color: 'white',
   },
 
   buttonText: {

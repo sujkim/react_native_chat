@@ -15,6 +15,7 @@ import {
 
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import {Header} from 'react-native/Libraries/NewAppScreen';
 
 export default function ChatDetail({navigation, route}) {
   const [loading, setLoading] = useState(true);
@@ -24,6 +25,7 @@ export default function ChatDetail({navigation, route}) {
   const email = route.params.email;
   const name = route.params.details.displayName;
   const photoURL = route.params.details.photoURL;
+  const headerHeight = useHeaderHeight();
 
   const chatsCollection = firestore().collection('chats');
 
@@ -43,6 +45,7 @@ export default function ChatDetail({navigation, route}) {
         },
       },
       fromToArray: [user.email, email],
+      // fromToArray: [user.uid, uid],
       name: user.displayName,
       message: message,
       photoURL: user.photoURL,
@@ -53,9 +56,8 @@ export default function ChatDetail({navigation, route}) {
 
   useEffect(() => {
     let isMounted = true;
-    const chat = chatsCollection
-      .orderBy('createdAt', 'desc')
-      .onSnapshot(querySnapshot => {
+    const chat = chatsCollection.orderBy('createdAt', 'desc').onSnapshot(
+      querySnapshot => {
         const chats = [];
         querySnapshot.forEach(documentSnapshot => {
           if (
@@ -75,7 +77,11 @@ export default function ChatDetail({navigation, route}) {
           setChats(chats);
           setLoading(false);
         }
-      });
+      },
+      error => {
+        console.log(error);
+      },
+    );
 
     return () => {
       chat;
@@ -86,7 +92,7 @@ export default function ChatDetail({navigation, route}) {
   if (loading) {
     return (
       <View style={{flex: 1, justifyContent: 'center'}}>
-        <ActivityIndicator style={{flex: 2}} size="large" color="blue" />
+        <ActivityIndicator style={{flex: 2}} />
         <View style={{flex: 1}}></View>
         <View style={{flex: 1}}></View>
       </View>
@@ -94,96 +100,97 @@ export default function ChatDetail({navigation, route}) {
   }
 
   return (
-    // <KeyboardAvoidingView behavior="padding" style={{flex: 1}}>
-    <View style={{flex: 1}}>
-      <FlatList
-        inverted
-        style={styles.chat}
-        data={chats}
-        renderItem={({item}) => (
-          <View style={styles.container}>
-            <View
-              style={
-                item.fromToArray[0] == user.email ? styles.user : styles.tile
-              }>
-              <Image source={{uri: item.photoURL}} style={styles.image} />
+    <KeyboardAvoidingView
+      keyboardVerticalOffset={headerHeight}
+      behavior="padding"
+      style={{flex: 1}}>
+      <View style={{flex: 1, backgroundColor: '#F6F6F6'}}>
+        <FlatList
+          inverted
+          data={chats}
+          renderItem={({item}) => (
+            <View style={styles.container}>
               <View
                 style={
-                  item.fromToArray[0] == user.email
-                    ? styles.messageBackground
-                    : {
-                        marginLeft: 10,
-                        padding: 10,
-                        borderWidth: 0.3,
-                        borderRadius: 10,
-                      }
+                  item.fromToArray[0] == user.email ? styles.user : styles.tile
                 }>
-                <Text>{item.message}</Text>
-              </View>
+                <Image source={{uri: item.photoURL}} style={styles.image} />
+                <View
+                  style={
+                    item.fromToArray[0] == user.email
+                      ? styles.messageBackground
+                      : [
+                          styles.messageBackground,
+                          {
+                            backgroundColor: 'white',
+                          },
+                        ]
+                  }>
+                  <Text
+                    style={
+                      item.fromToArray[0] == user.email
+                        ? {color: 'white'}
+                        : {color: 'black'}
+                    }>
+                    {item.message}
+                  </Text>
+                </View>
 
-              <Text style={{alignSelf: 'center'}}>
-                {/* {item.createdAt.toDate().toLocaleTimeString()} */}
-              </Text>
+                <Text style={{alignSelf: 'center'}}>
+                  {/* {item.createdAt.toDate().toLocaleTimeString()} */}
+                </Text>
+              </View>
             </View>
-          </View>
-        )}
-      />
-      <KeyboardAvoidingView
+          )}
+        />
+        {/* <KeyboardAvoidingView
         behavior="padding"
         style={{}}
-        keyboardVerticalOffset={useHeaderHeight()}>
+        keyboardVerticalOffset={useHeaderHeight()}> */}
         <View style={styles.messageContainer}>
           <TextInput
             style={styles.message}
             onChangeText={onChangeMessage}
             value={message}
             autoCapitalize="none"
+            multiline={true}
+            textAlignVertical="bottom"
           />
           <TouchableOpacity onPress={() => sendMessage()}>
             <Image source={require('../assets/send.png')} style={styles.send} />
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
-    </View>
-    // </KeyboardAvoidingView>
+        {/* </KeyboardAvoidingView> */}
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
+const primaryColor = '#8785A2';
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // backgroundColor: 'red',
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
-  chat: {
+  container: {
     flex: 1,
-    // flexDirection: 'column-reverse',
-    // marginBottom: 30,
-    // paddingBottom: 10,
   },
 
   tile: {
     flexDirection: 'row',
-    // justifyContent: 'space-between',
-    margin: 10,
+    borderColor: primaryColor,
     padding: 10,
-    // backgroundColor: 'red',
-    color: 'red',
-    // borderBottomWidth: 0.2,
+    marginRight: 60,
   },
 
   user: {
     flexDirection: 'row-reverse',
-    // justifyContent: 'space-between',
-    margin: 10,
+    marginRight: 60,
     padding: 10,
-    // backgroundColor: 'red',
-    // color: 'red',
-    // borderBottomWidth: 0.2,
   },
 
   main: {
-    // backgroundColor: 'red',
     marginLeft: 30,
   },
 
@@ -191,8 +198,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginRight: 10,
     padding: 10,
-    backgroundColor: '#AEE1E1',
+    backgroundColor: primaryColor,
     borderRadius: 10,
+    // shadowOpacity: 0.2,
+  },
+
+  messageText: {
+    color: 'white',
   },
 
   name: {
@@ -203,8 +215,8 @@ const styles = StyleSheet.create({
   image: {
     backgroundColor: 'blue',
     width: 40,
+    height: 40,
     padding: 20,
-    // resizeMode: 'contain',
     borderRadius: 20,
     overflow: 'hidden',
   },
@@ -214,37 +226,26 @@ const styles = StyleSheet.create({
   },
 
   messageContainer: {
-    marginBottom: 30,
+    marginVertical: 30,
     flexDirection: 'row',
-    // flex: 1,
-    // justifyContent: 'flex-end',
     alignItems: 'center',
-    // height: '80%',
-    // marginStart: 30,
     width: '90%',
     borderWidth: 0.3,
-    // height: '10%',
-    // backgroundColor: 'red',
     borderRadius: 20,
     alignSelf: 'center',
   },
 
   message: {
     width: '90%',
-    padding: 20,
-    // borderRadius: 20,
-    // height: '80%',
-    // backgroundColor: 'red',
-    // borderWidth: 0.3,
+    marginTop: 10,
+    marginBottom: 10,
+    paddingStart: 20,
+    paddingEnd: 20,
   },
 
   send: {
-    // resizeMode: 'contain',
     height: 30,
     width: 30,
-    tintColor: '#5b8c8c',
-
-    // padding: 10,
-    // alignSelf: 'flex-end',
+    tintColor: primaryColor,
   },
 });

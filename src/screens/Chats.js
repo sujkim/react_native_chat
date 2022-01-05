@@ -19,6 +19,24 @@ const Chats = ({navigation: {navigate}}) => {
   const chatsCollection = firestore().collection('chats');
   const user = auth().currentUser;
 
+  const isToday = date => {
+    let today = new Date();
+    return (
+      date.getFullYear() == today.getFullYear() &&
+      date.getMonth() == today.getMonth() &&
+      date.getDate() == today.getDate()
+    );
+  };
+
+  const isYesterday = date => {
+    let today = new Date();
+    return (
+      date.getFullYear() == today.getFullYear() &&
+      date.getMonth() == today.getMonth() &&
+      date.getDate() == today.getDate() - 1
+    );
+  };
+
   useEffect(() => {
     let isMounted = false;
 
@@ -157,14 +175,18 @@ const Chats = ({navigation: {navigate}}) => {
                       <Text>{item.message}</Text>
                     </View>
                   </View>
-                  <View style={{justifyContent: 'center'}}>
+                  <View>
                     <Text style={styles.date}>
-                      {item.createdAt.toDate().toLocaleTimeString()}
-                      {/* // .toDateString()} */}
+                      {isToday(item.createdAt.toDate())
+                        ? item.createdAt.toDate().toLocaleTimeString([], {
+                            hour: 'numeric',
+                            minute: 'numeric',
+                          })
+                        : isYesterday(item.createdAt.toDate())
+                        ? 'Yesterday'
+                        : item.createdAt.toDate().toLocaleDateString('en-US')}
                     </Text>
                   </View>
-                  {/* <Text>Image: {item.imageURL}</Text> */}
-                  {/* <Text>Time: {item.time}</Text> */}
                 </View>
               </Pressable>
             </View>
@@ -199,18 +221,23 @@ const styles = StyleSheet.create({
 
   tile: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    // justifyContent: 'space-between',
     alignItems: 'center',
-    margin: 10,
+    // margin: 10,
     padding: 10,
-    color: 'red',
-    borderBottomWidth: 0.2,
+    borderBottomWidth: 0.3,
+
     borderColor: 'grey',
+
+    // backgroundColor: 'red',
   },
 
   main: {
-    marginLeft: 10,
+    marginLeft: 20,
     justifyContent: 'center',
+    width: '65%',
+    // backgroundColor: 'red',
   },
 
   name: {
@@ -234,7 +261,11 @@ const styles = StyleSheet.create({
   },
 
   date: {
-    fontSize: 10,
+    fontSize: 13,
+    padding: 5,
+
+    // alignSelf: 'flex-end',
+    // backgroundColor: 'red',
   },
 });
 

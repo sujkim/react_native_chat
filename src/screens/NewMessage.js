@@ -26,9 +26,10 @@ const NewMessage = ({navigation}) => {
   const [selected, setSelected] = useState(false);
   const user = auth().currentUser;
 
-  const selectedText = '#0f7d7d';
+  const selectedText = '#22577E';
 
   const searchUser = async () => {
+    setReceiver(null);
     await firestore()
       .collection('users')
       .where('email', '==', to.toLowerCase())
@@ -36,16 +37,12 @@ const NewMessage = ({navigation}) => {
       .then(querySnapshot => {
         if (querySnapshot.empty) {
           setReceiver({
-            photoURL: null,
             displayName: 'User not found',
-            email: null,
           });
         }
         querySnapshot.forEach(documentSnapshot => {
           if (documentSnapshot.exists) {
             setReceiver(documentSnapshot.data());
-          } else {
-            console.log('dont exist');
           }
         });
       });
@@ -64,6 +61,7 @@ const NewMessage = ({navigation}) => {
             },
           },
           fromToArray: [user.email, receiver.email],
+          // fromToArray: [user.uid, receiver.uid],
           name: user.displayName,
           message: message,
           photoURL: user.photoURL,
@@ -100,19 +98,19 @@ const NewMessage = ({navigation}) => {
             <Text>To: </Text>
             {selected ? (
               <TextInput
-                defaultValue={receiver.displayName}
                 style={[styles.input, {color: selectedText}]}
                 selectTextOnFocus={true}
                 onPressIn={() => {
                   setSelected(false);
                 }}
                 onChangeText={onChangeTo}
-                value={to}
+                // value={to}
                 placeholder="name@email.com"
                 autoCapitalize="none"
                 autoFocus={true}
                 onSubmitEditing={() => searchUser()}
                 returnKeyType="search"
+                defaultValue={receiver.displayName}
               />
             ) : (
               <TextInput
@@ -151,7 +149,9 @@ const NewMessage = ({navigation}) => {
                 </View>
                 <View>
                   {receiver.email && (
-                    <Text style={{color: selectedText}}>Select</Text>
+                    <Text style={{color: selectedText, fontWeight: 'bold'}}>
+                      Select
+                    </Text>
                   )}
                 </View>
               </View>
@@ -159,17 +159,19 @@ const NewMessage = ({navigation}) => {
           </View>
         )}
       </View>
-      <View style={styles.messageContainer}>
-        <TextInput
-          style={styles.message}
-          onChangeText={onChangeMessage}
-          value={message}
-          autoCapitalize="none"
-        />
-        <TouchableOpacity onPress={() => sendMessage()}>
-          <Image source={require('../assets/send.png')} style={styles.send} />
-        </TouchableOpacity>
-      </View>
+      {selected && (
+        <View style={styles.messageContainer}>
+          <TextInput
+            style={styles.message}
+            onChangeText={onChangeMessage}
+            value={message}
+            autoCapitalize="none"
+          />
+          <TouchableOpacity onPress={() => sendMessage()}>
+            <Image source={require('../assets/send.png')} style={styles.send} />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

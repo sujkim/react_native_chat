@@ -67,6 +67,7 @@ const SignUp = () => {
         email: email.toLowerCase(),
         displayName: name,
         photoURL: image,
+        // uid: user.uid,
       })
       .then(() => {
         console.log('user addded');
@@ -131,6 +132,7 @@ const SignUp = () => {
 
 export default SignUp;
 
+const primaryColor = '#8785A2';
 const styles = StyleSheet.create({
   avatar: {
     padding: 40,
@@ -168,7 +170,7 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    backgroundColor: '#FCD1D1',
+    backgroundColor: primaryColor,
     width: 150,
     height: 150,
     borderRadius: 75,
@@ -187,7 +189,7 @@ const styles = StyleSheet.create({
 
   button: {
     width: '80%',
-    backgroundColor: '#FCD1D1',
+    backgroundColor: primaryColor,
     padding: 15,
     borderRadius: 10,
   },
@@ -195,5 +197,6 @@ const styles = StyleSheet.create({
   buttonText: {
     textAlign: 'center',
     fontSize: 16,
+    color: 'white',
   },
 });
