@@ -15,6 +15,9 @@ import firestore from '@react-native-firebase/firestore';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import auth from '@react-native-firebase/auth';
+import KeyboardAvoidingView from 'react-native/Libraries/Components/Keyboard/KeyboardAvoidingView';
+import {useHeaderHeight} from '@react-navigation/elements';
+import {clear} from 'react-native/Libraries/LogBox/Data/LogBoxData';
 
 const NewMessage = ({navigation}) => {
   const [to, onChangeTo] = useState(null);
@@ -23,26 +26,32 @@ const NewMessage = ({navigation}) => {
   const [selected, setSelected] = useState(false);
   const user = auth().currentUser;
 
+  const selectedText = '#0f7d7d';
+
   const searchUser = async () => {
     await firestore()
       .collection('users')
       .where('email', '==', to.toLowerCase())
       .get()
       .then(querySnapshot => {
+        if (querySnapshot.empty) {
+          setReceiver({
+            photoURL: null,
+            displayName: 'User not found',
+            email: null,
+          });
+        }
         querySnapshot.forEach(documentSnapshot => {
           if (documentSnapshot.exists) {
-            console.log('yes', documentSnapshot.data());
             setReceiver(documentSnapshot.data());
           } else {
-            setReceiver({displayName: 'No results'});
+            console.log('dont exist');
           }
         });
       });
   };
 
   const sendMessage = () => {
-    console.log('send');
-    console.log(user, to, user.displayName, message, user.photoURL);
     if (receiver && message) {
       firestore()
         .collection('chats')
@@ -54,7 +63,7 @@ const NewMessage = ({navigation}) => {
               photoURL: receiver.photoURL,
             },
           },
-          fromToArray: [user.email, to],
+          fromToArray: [user.email, receiver.email],
           name: user.displayName,
           message: message,
           photoURL: user.photoURL,
@@ -86,73 +95,81 @@ const NewMessage = ({navigation}) => {
             color="#22577E"
           />
         </View>
-        <View style={styles.toInput}>
-          <Text>To: </Text>
-          {selected ? (
-            <Text
-              style={{color: '#0f7d7d', fontWeight: 'bold', marginLeft: 10}}>
-              {receiver.displayName}
-            </Text>
-          ) : (
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeTo}
-              value={to}
-              placeholder="name@email.com"
-              autoCapitalize="none"
-              autoFocus={true}
-              onSubmitEditing={() => searchUser()}
-              returnKeyType="search"
-            />
-          )}
+        <View>
+          <View style={styles.toInput}>
+            <Text>To: </Text>
+            {selected ? (
+              <TextInput
+                defaultValue={receiver.displayName}
+                style={[styles.input, {color: selectedText}]}
+                selectTextOnFocus={true}
+                onPressIn={() => {
+                  setSelected(false);
+                }}
+                onChangeText={onChangeTo}
+                value={to}
+                placeholder="name@email.com"
+                autoCapitalize="none"
+                autoFocus={true}
+                onSubmitEditing={() => searchUser()}
+                returnKeyType="search"
+              />
+            ) : (
+              <TextInput
+                style={styles.input}
+                onChangeText={onChangeTo}
+                value={to}
+                placeholder="name@email.com"
+                autoCapitalize="none"
+                autoFocus={true}
+                onSubmitEditing={() => searchUser()}
+                returnKeyType="search"
+              />
+            )}
+          </View>
         </View>
-        {receiver && !selected ? (
+        {receiver && !selected && (
           <View>
             <Pressable
               onPress={() => {
-                setSelected(true);
+                if (receiver.email) setSelected(true);
               }}>
               <View style={styles.tile}>
-                <Image
-                  style={styles.image}
-                  source={{
-                    uri: receiver.photoURL,
-                  }}
-                />
-                <View>
-                  <Text style={{color: '#0f7d7d', fontWeight: 'bold'}}>
-                    {receiver.displayName}
-                  </Text>
-                  <Text style={{color: '#0f7d7d'}}>{receiver.email}</Text>
+                <View style={{flexDirection: 'row'}}>
+                  <Image
+                    style={styles.image}
+                    source={{
+                      uri: receiver.photoURL,
+                    }}
+                  />
+                  <View>
+                    <Text style={{color: selectedText, fontWeight: 'bold'}}>
+                      {receiver.displayName}
+                    </Text>
+                    <Text style={{color: selectedText}}>{receiver.email}</Text>
+                  </View>
                 </View>
-                {/* <Image
-                source={require('../assets/add.png')}
-                style={{
-                  tintColor: '#0f7d7d',
-                  height: 20,
-                  width: 20,
-                }}
-              /> */}
+                <View>
+                  {receiver.email && (
+                    <Text style={{color: selectedText}}>Select</Text>
+                  )}
+                </View>
               </View>
             </Pressable>
           </View>
-        ) : null}
+        )}
       </View>
-      <SafeAreaView>
-        <View style={styles.messageContainer}>
-          {/* <SafeAreaView> */}
-          <TextInput
-            style={styles.message}
-            onChangeText={onChangeMessage}
-            value={message}
-            autoCapitalize="none"
-          />
-          <TouchableOpacity onPress={() => sendMessage()}>
-            <Image source={require('../assets/send.png')} style={styles.send} />
-          </TouchableOpacity>
-          {/* </SafeAreaView> */}
-        </View>
-      </SafeAreaView>
+      <View style={styles.messageContainer}>
+        <TextInput
+          style={styles.message}
+          onChangeText={onChangeMessage}
+          value={message}
+          autoCapitalize="none"
+        />
+        <TouchableOpacity onPress={() => sendMessage()}>
+          <Image source={require('../assets/send.png')} style={styles.send} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -160,20 +177,17 @@ const NewMessage = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // flexDirection: 'column',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
   },
+
   header: {
     flexDirection: 'row',
     padding: 20,
     justifyContent: 'space-between',
-    // borderWidth: 0.2,
-    // backgroundColor: '#70a1c4',
   },
 
   toInput: {
     padding: 20,
-    // backgroundColor: 'red',
     flexDirection: 'row',
     borderBottomWidth: 0.2,
     borderColor: 'grey',
@@ -183,18 +197,13 @@ const styles = StyleSheet.create({
   input: {
     paddingStart: 10,
   },
+
   messageContainer: {
-    // position: 'relative',
+    marginTop: 30,
     flexDirection: 'row',
-    // flex: 1,
-    // justifyContent: 'flex-end',
     alignItems: 'center',
-    // height: '80%',
-    // marginStart: 30,
-    width: '90%',
+    width: '95%',
     borderWidth: 0.3,
-    // height: '10%',
-    // backgroundColor: 'red',
     borderRadius: 20,
     alignSelf: 'center',
   },
@@ -202,6 +211,7 @@ const styles = StyleSheet.create({
   tile: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 10,
     marginHorizontal: 10,
     borderBottomWidth: 0.3,
@@ -212,29 +222,19 @@ const styles = StyleSheet.create({
     width: 40,
     borderRadius: 20,
     marginRight: 20,
-    // resizeMode: 'contain',
     backgroundColor: '#AEE1E1',
   },
 
   message: {
     width: '90%',
     padding: 20,
-    // borderRadius: 20,
-    // height: '80%',
-    // backgroundColor: 'red',
-    // borderWidth: 0.3,
   },
 
   send: {
-    // resizeMode: 'contain',
     height: 30,
     width: 30,
     tintColor: '#22577E',
-    // padding: 10,
-    // alignSelf: 'flex-end',
   },
-
-  body: {},
 });
 
 export default NewMessage;

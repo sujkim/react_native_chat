@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {useHeaderHeight} from '@react-navigation/elements';
 import {
   View,
   Text,
@@ -9,7 +10,9 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  KeyboardAvoidingView,
 } from 'react-native';
+
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 
@@ -18,10 +21,10 @@ export default function ChatDetail({navigation, route}) {
   const [chats, setChats] = useState(['']);
   const [message, onChangeMessage] = useState(null);
   const user = auth().currentUser;
+  const email = route.params.email;
   const name = route.params.details.displayName;
   const photoURL = route.params.details.photoURL;
-  const email = route.params.email;
-  console.log('params details', name, photoURL, email);
+
   const chatsCollection = firestore().collection('chats');
 
   React.useLayoutEffect(() => {
@@ -31,8 +34,6 @@ export default function ChatDetail({navigation, route}) {
   });
 
   const sendMessage = () => {
-    console.log('send');
-    // console.log(user, other, user.displayName, message, user.photoURL);
     chatsCollection.add({
       fromTo: {
         from: {displayName: user.displayName, photoURL: user.photoURL},
@@ -53,15 +54,10 @@ export default function ChatDetail({navigation, route}) {
   useEffect(() => {
     let isMounted = true;
     const chat = chatsCollection
-      // .where('fromToArray', 'array-contains-any', [user.email, to])
-      .orderBy('createdAt')
-      // .where('fromToArray', 'array-contains-any', [user.email, to])
-
+      .orderBy('createdAt', 'desc')
       .onSnapshot(querySnapshot => {
         const chats = [];
-
         querySnapshot.forEach(documentSnapshot => {
-          console.log('testing', documentSnapshot.get('fromToArray')[0]);
           if (
             (documentSnapshot.get('fromToArray')[0] == user.email &&
               documentSnapshot.get('fromToArray')[1] == email) ||
@@ -90,60 +86,66 @@ export default function ChatDetail({navigation, route}) {
   if (loading) {
     return (
       <View style={{flex: 1, justifyContent: 'center'}}>
-        <ActivityIndicator />
+        <ActivityIndicator style={{flex: 2}} size="large" color="blue" />
+        <View style={{flex: 1}}></View>
+        <View style={{flex: 1}}></View>
       </View>
     );
   }
 
   return (
-    <View>
-      <View style={{height: '90%'}}>
-        <FlatList
-          data={chats}
-          renderItem={({item}) => (
-            <View style={styles.container}>
+    // <KeyboardAvoidingView behavior="padding" style={{flex: 1}}>
+    <View style={{flex: 1}}>
+      <FlatList
+        inverted
+        style={styles.chat}
+        data={chats}
+        renderItem={({item}) => (
+          <View style={styles.container}>
+            <View
+              style={
+                item.fromToArray[0] == user.email ? styles.user : styles.tile
+              }>
+              <Image source={{uri: item.photoURL}} style={styles.image} />
               <View
                 style={
-                  item.fromToArray[0] == user.email ? styles.user : styles.tile
+                  item.fromToArray[0] == user.email
+                    ? styles.messageBackground
+                    : {
+                        marginLeft: 10,
+                        padding: 10,
+                        borderWidth: 0.3,
+                        borderRadius: 10,
+                      }
                 }>
-                {console.log('in the thing', item.photoURL)}
-                <Image source={{uri: item.photoURL}} style={styles.image} />
-                <View
-                  style={
-                    item.fromToArray[0] == user.email
-                      ? styles.messageBackground
-                      : {
-                          marginLeft: 10,
-                          padding: 10,
-                          borderWidth: 0.3,
-                          borderRadius: 10,
-                        }
-                  }>
-                  <Text>{item.message}</Text>
-                </View>
-
-                {/* <Text>Time: {item.time}</Text> */}
+                <Text>{item.message}</Text>
               </View>
+
+              <Text style={{alignSelf: 'center'}}>
+                {/* {item.createdAt.toDate().toLocaleTimeString()} */}
+              </Text>
             </View>
-          )}
-        />
-      </View>
-      {/* <SafeAreaView> */}
-      <View style={styles.messageContainer}>
-        {/* <SafeAreaView> */}
-        <TextInput
-          style={styles.message}
-          onChangeText={onChangeMessage}
-          value={message}
-          autoCapitalize="none"
-        />
-        <TouchableOpacity onPress={() => sendMessage()}>
-          <Image source={require('../assets/send.png')} style={styles.send} />
-        </TouchableOpacity>
-        {/* </SafeAreaView> */}
-      </View>
-      {/* </SafeAreaView> */}
+          </View>
+        )}
+      />
+      <KeyboardAvoidingView
+        behavior="padding"
+        style={{}}
+        keyboardVerticalOffset={useHeaderHeight()}>
+        <View style={styles.messageContainer}>
+          <TextInput
+            style={styles.message}
+            onChangeText={onChangeMessage}
+            value={message}
+            autoCapitalize="none"
+          />
+          <TouchableOpacity onPress={() => sendMessage()}>
+            <Image source={require('../assets/send.png')} style={styles.send} />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </View>
+    // </KeyboardAvoidingView>
   );
 }
 
@@ -151,6 +153,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     // backgroundColor: 'red',
+  },
+
+  chat: {
+    flex: 1,
+    // flexDirection: 'column-reverse',
+    // marginBottom: 30,
+    // paddingBottom: 10,
   },
 
   tile: {
@@ -205,7 +214,7 @@ const styles = StyleSheet.create({
   },
 
   messageContainer: {
-    // position: 'relative',
+    marginBottom: 30,
     flexDirection: 'row',
     // flex: 1,
     // justifyContent: 'flex-end',

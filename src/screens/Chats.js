@@ -7,27 +7,33 @@ import {
   StyleSheet,
   Image,
   Pressable,
-  RefreshControlBase,
 } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
-import {SafeAreaView} from 'react-native-safe-area-context';
-
 import auth from '@react-native-firebase/auth';
-import SignIn from './SignIn';
-import ChatDetail from './ChatDetail';
 
 const Chats = ({navigation: {navigate}}) => {
   const [loading, setLoading] = useState(true);
   const [conversations, setConversations] = useState([]);
-  const user = auth().currentUser;
+  const [name, setName] = useState('');
+  const [avatar, setAvatar] = useState(null);
   const chatsCollection = firestore().collection('chats');
+  const user = auth().currentUser;
 
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = false;
 
-    const chat = chatsCollection
-      .orderBy('createdAt', 'desc')
-      .onSnapshot({includeMetadataChanges: true}, querySnapshot => {
+    const getUserDetails = firestore()
+      .collection('users')
+      .doc(user.uid)
+      .get()
+      .then(documentSnapshot => {
+        setName(documentSnapshot.data().displayName);
+        setAvatar(documentSnapshot.data().photoURL);
+      });
+
+    const chat = chatsCollection.orderBy('createdAt', 'desc').onSnapshot(
+      {includeMetadataChanges: true},
+      querySnapshot => {
         const chats = [];
         const users = [];
         const conversations = [];
@@ -56,15 +62,20 @@ const Chats = ({navigation: {navigate}}) => {
             });
           });
 
-        if (isMounted) {
+        if (!isMounted) {
           setConversations(conversations);
           setLoading(false);
         }
-      });
+      },
+      error => {
+        console.log(error);
+      },
+    );
 
     return () => {
+      getUserDetails;
       chat;
-      isMounted = false;
+      isMounted = true;
     };
   }, []);
 
@@ -78,9 +89,6 @@ const Chats = ({navigation: {navigate}}) => {
 
   return (
     <View style={{flex: 1, backgroundColor: '#F6F6F6'}}>
-      {/* <SafeAreaView> */}
-
-      {/* </SafeAreaView> */}
       <View
         style={{
           alignItems: 'center',
@@ -92,8 +100,11 @@ const Chats = ({navigation: {navigate}}) => {
           }}
           style={styles.userImage}
         />
+        {console.log(avatar)}
         <Text>{user.displayName}</Text>
+        {console.log(name)}
       </View>
+
       <View style={styles.header}>
         <Text style={styles.title}>Messages</Text>
         <View style={styles.buttonContainer}>
@@ -148,13 +159,8 @@ const Chats = ({navigation: {navigate}}) => {
                   </View>
                   <View style={{justifyContent: 'center'}}>
                     <Text style={styles.date}>
-                      {/* {item.createdAt
-                        ? item.createdAt.toDate().toDateString()
-                        : ''} */}
-                      {
-                        // item.createdAt.toDate().toLocaleTimeString()
-                        // .toDateString()
-                      }
+                      {item.createdAt.toDate().toLocaleTimeString()}
+                      {/* // .toDateString()} */}
                     </Text>
                   </View>
                   {/* <Text>Image: {item.imageURL}</Text> */}
@@ -172,41 +178,23 @@ const Chats = ({navigation: {navigate}}) => {
 const primaryFontColor = '#8785A2';
 const styles = StyleSheet.create({
   buttonContainer: {
-    // backgroundColor: 'blue',
-    // marginRight: 10,
-    // height: '30%',
-    // flexDirection: 'row',
     padding: 10,
-    // justifyContent: 'flex-start',
-    // alignItems: 'flex-end',
   },
 
   button: {
-    // padding: 10,
     width: 30,
     height: 30,
-    // tintColor: '#8785A2',
-    // backgroundColor: '#22577E',
-    // borderRadius: 10,
   },
 
   header: {
-    // backgroundColor: 'red',
-    // marginTop: 10,
     marginLeft: 20,
-    // height: '30%',
-    // justifyContent: 'flex-end',
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
 
   title: {
-    // backgroundColor: 'white',
     fontSize: 30,
-    // fontWeight: 'bold',
-    // color: primaryFontColor,
-    // justifyContent: 'center',
   },
 
   tile: {
@@ -215,11 +203,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     margin: 10,
     padding: 10,
-    // backgroundColor: 'red',
     color: 'red',
     borderBottomWidth: 0.2,
     borderColor: 'grey',
-    // heigsht: '80%',
   },
 
   main: {
@@ -237,23 +223,18 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     marginBottom: 10,
-    // resizeMode: 'contain',
     borderRadius: 40,
-    // overflow: 'hidden',
   },
 
   image: {
     backgroundColor: '#70a1c4',
     width: 40,
     height: 40,
-    // resizeMode: 'contain',
     borderRadius: 20,
-    // overflow: 'hidden',
   },
 
   date: {
     fontSize: 10,
-    // alignSelf: 'center',
   },
 });
 

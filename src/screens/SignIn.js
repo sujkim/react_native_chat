@@ -6,12 +6,16 @@ import {
   StyleSheet,
   Alert,
   Pressable,
+  Platform,
 } from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import KeyboardAvoidingView from 'react-native/Libraries/Components/Keyboard/KeyboardAvoidingView';
+import {useHeaderHeight} from '@react-navigation/elements';
 
+// if adding sign in with google function
 async function signInWithGoogle() {
   GoogleSignin.configure({
     webClientId:
@@ -30,84 +34,88 @@ async function signInWithGoogle() {
   return auth().signInWithCredential(googleCredential);
 }
 
+const signInWithEmail = (email, password) => {
+  auth()
+    .signInWithEmailAndPassword(email, password)
+    .catch(error => {
+      if (error.code == 'auth/user-not-found') {
+        Alert.alert("Account doesn't exist. Please sign up!");
+        return;
+      }
+
+      if (error.code == 'auth/wrong-password') {
+        Alert.alert('Wrong password');
+        return;
+      }
+
+      if (error.code === 'auth/invalid-email') {
+        Alert.alert('That email address is invalid!');
+        return;
+      }
+      console.error(error);
+      return;
+    });
+};
+
 const SignIn = ({navigation: {navigate}}) => {
   const [email, onChangeEmail] = useState('');
   const [password, onChangePassword] = useState('');
 
-  const signIn = () => {
-    auth()
-      .signInWithEmailAndPassword(email, password)
-      .catch(error => {
-        if (error.code == 'auth/user-not-found') {
-          Alert.alert("Account doesn't exist. Please sign up!");
-          return;
-        }
-
-        if (error.code == 'auth/wrong-password') {
-          Alert.alert('Wrong password');
-          return;
-        }
-
-        if (error.code === 'auth/invalid-email') {
-          Alert.alert('That email address is invalid!');
-          return;
-        }
-        console.error(error);
-        return;
-      });
-  };
-
   return (
-    <View style={styles.body}>
-      <View style={styles.header}></View>
-      <View style={styles.main}>
-        <View style={styles.email}>
-          <Text style={styles.text}>Email Address</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={onChangeEmail}
-            value={email}
-            keyboardType="email-address"
-            placeholder="name@address.com"
-            autoCapitalize="none"
-          />
+    <KeyboardAvoidingView
+      keyboardVerticalOffset={useHeaderHeight()}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{flex: 1}}>
+      <View style={styles.body}>
+        <View style={styles.header}></View>
+        <View style={styles.main}>
+          <View style={styles.email}>
+            <Text style={styles.text}>Email Address</Text>
+            <TextInput
+              style={styles.input}
+              onChangeText={onChangeEmail}
+              value={email}
+              keyboardType="email-address"
+              placeholder="name@address.com"
+              autoCapitalize="none"
+            />
+            <Text style={styles.text}>Password</Text>
+            <TextInput
+              style={styles.input}
+              onChangeText={onChangePassword}
+              value={password}
+              placeholder="Password"
+              secureTextEntry={true}
+            />
+          </View>
 
-          <Text style={styles.text}>Password</Text>
-          <TextInput
-            style={styles.input}
-            onChangeText={onChangePassword}
-            value={password}
-            placeholder="Password"
-            secureTextEntry={true}
-          />
+          <View style={styles.buttons}>
+            <Pressable
+              style={styles.button}
+              onPress={() => {
+                signInWithEmail(email, password);
+              }}>
+              <Text style={styles.buttonText}>Sign In</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.button, styles.signUp]}
+              onPress={() => navigate('Sign Up')}>
+              <Text style={[styles.buttonText, styles.signUpButtonText]}>
+                Sign Up
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
-        <View style={styles.buttons}>
-          <Pressable
-            style={styles.button}
-            onPress={() => {
-              signIn();
-            }}>
-            <Text style={styles.buttonText}>Sign In</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.button, styles.signUp]}
-            onPress={() => navigate('Sign Up')}>
-            <Text style={[styles.buttonText, styles.signUpButtonText]}>
-              Sign Up
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-
-      {/* 
+        {/* 
         <GoogleSigninButton
           size={GoogleSigninButton.Size.Wide}
           title="Sign in with Google"
           className="sign-in"
           onPress={signInWithGoogle}
         /> */}
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -122,6 +130,7 @@ const styles = StyleSheet.create({
 
   body: {
     flex: 1,
+    paddingBottom: 30,
     justifyContent: 'center',
   },
 

@@ -22,11 +22,10 @@ function App() {
   // Set an initializing state whilst Firebase connects
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
-  // const [noUser, set]
+
   const headerColor = '#FCD1D1';
   // Handle user state changes
   function onAuthStateChanged(user) {
-    // if (user) auth().currentUser.reload();
     setUser(user);
     if (initializing) setInitializing(false);
   }
@@ -52,7 +51,6 @@ function App() {
               headerRight: () => signOutButton(user),
             }}
           />
-
           <Stack.Screen
             name="Chat Detail"
             component={ChatDetail}
@@ -74,9 +72,6 @@ function App() {
         </Stack.Navigator>
       </NavigationContainer>
     );
-
-    // navigate('Chats', {user: user});
-    // return <Chats user={user} />;
   }
 
   if (!user) {
