@@ -48,20 +48,20 @@ const Chats = ({navigation: {navigate}}) => {
         const conversations = [];
         if (!querySnapshot.metadata.hasPendingWrites)
           querySnapshot.forEach(documentSnapshot => {
-            if (
-              documentSnapshot.get('fromToArray')[0] == user.email ||
-              documentSnapshot.get('fromToArray')[1] == user.email
-            ) {
-              chats.push({
-                ...documentSnapshot.data(),
-                key: documentSnapshot.id,
-              });
-            }
+            // if (
+            //   documentSnapshot.get('fromToArray')[0] == user.email ||
+            //   documentSnapshot.get('fromToArray')[1] == user.email
+            // ) {
+            chats.push({
+              ...documentSnapshot.data(),
+              key: documentSnapshot.id,
+            });
+            // }
             chats.map(item => {
-              const from = item['fromToArray'][0];
-              const to = item['fromToArray'][1];
+              // const from = item['fromToArray'][0];
+              // const to = item['fromToArray'][1];
 
-              const other = from == user.email ? to : from;
+              const other = item.from == user.uid ? item.to : item.from;
 
               // group conversations
               if (!users.includes(other)) {
@@ -82,9 +82,9 @@ const Chats = ({navigation: {navigate}}) => {
     );
 
     return () => {
+      isMounted = true;
       // getUserDetails;
       chat;
-      isMounted = true;
     };
   }, []);
 
@@ -120,14 +120,8 @@ const Chats = ({navigation: {navigate}}) => {
               <Pressable
                 onPress={() =>
                   navigate('Chat Detail', {
-                    email:
-                      item.fromToArray[0] == user.email
-                        ? item.fromToArray[1]
-                        : item.fromToArray[0],
-                    details:
-                      item.fromToArray[0] == user.email
-                        ? item.fromTo.to
-                        : item.fromTo.from,
+                    email: item.from == user.uid ? item.to : item.from,
+                    details: item.from == user.uid ? item.to : item.from,
                   })
                 }>
                 <View style={styles.tile}>
@@ -135,7 +129,7 @@ const Chats = ({navigation: {navigate}}) => {
                     <Image
                       source={{
                         uri:
-                          item.fromToArray[0] == user.email
+                          item.from == user.uid
                             ? item.fromTo.to.photoURL
                             : item.fromTo.from.photoURL,
                       }}
@@ -143,7 +137,7 @@ const Chats = ({navigation: {navigate}}) => {
                     />
                     <View style={styles.main}>
                       <Text style={styles.name}>
-                        {item.fromToArray[0] == user.email
+                        {item.from == user.uid
                           ? item.fromTo.to.displayName
                           : item.fromTo.from.displayName}
                       </Text>

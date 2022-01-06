@@ -60,8 +60,7 @@ const SignUp = ({navigation: {navigate}}) => {
         });
         // add user to users database
         addUser();
-      })
-      .then(() => <Chats />);
+      });
   };
 
   const addUser = async () => {
@@ -73,7 +72,7 @@ const SignUp = ({navigation: {navigate}}) => {
         email: email.toLowerCase(),
         displayName: name,
         photoURL: image,
-        // uid: user.uid,
+        uid: user.uid,
       })
       .then(() => {
         console.log('user addded');

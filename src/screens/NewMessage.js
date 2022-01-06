@@ -60,12 +60,15 @@ const NewMessage = ({navigation}) => {
               photoURL: receiver.photoURL,
             },
           },
-          fromToArray: [user.email, receiver.email],
+          // fromToArray: [user.email, receiver.email],
           // fromToArray: [user.uid, receiver.uid],
+          from: user.uid,
+          to: receiver.uid,
           name: user.displayName,
           message: message,
           photoURL: user.photoURL,
           createdAt: firestore.FieldValue.serverTimestamp(),
+          // uid: user.uid,
         })
         .then(() => {
           navigation.navigate('Chats');
