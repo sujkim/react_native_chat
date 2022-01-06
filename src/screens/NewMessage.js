@@ -26,7 +26,7 @@ const NewMessage = ({navigation}) => {
   const [selected, setSelected] = useState(false);
   const user = auth().currentUser;
 
-  const selectedText = '#22577E';
+  const selectedText = '#4268AE';
 
   const searchUser = async () => {
     setReceiver(null);
@@ -90,15 +90,15 @@ const NewMessage = ({navigation}) => {
           <Button
             onPress={() => navigation.pop()}
             title="Cancel"
-            color="#22577E"
+            color="#4268AE"
           />
         </View>
         <View>
           <View style={styles.toInput}>
-            <Text>To: </Text>
+            <Text style={{fontSize: 16}}>To: </Text>
             {selected ? (
               <TextInput
-                style={[styles.input, {color: selectedText}]}
+                style={[styles.input, {color: selectedText, fontSize: 16}]}
                 selectTextOnFocus={true}
                 onPressIn={() => {
                   setSelected(false);
@@ -141,7 +141,12 @@ const NewMessage = ({navigation}) => {
                     }}
                   />
                   <View>
-                    <Text style={{color: selectedText, fontWeight: 'bold'}}>
+                    <Text
+                      style={{
+                        color: selectedText,
+                        fontWeight: 'bold',
+                        fontSize: 16,
+                      }}>
                       {receiver.displayName}
                     </Text>
                     <Text style={{color: selectedText}}>{receiver.email}</Text>
@@ -149,7 +154,12 @@ const NewMessage = ({navigation}) => {
                 </View>
                 <View>
                   {receiver.email && (
-                    <Text style={{color: selectedText, fontWeight: 'bold'}}>
+                    <Text
+                      style={{
+                        color: selectedText,
+                        fontSize: 16,
+                        fontWeight: 'bold',
+                      }}>
                       Select
                     </Text>
                   )}
@@ -189,7 +199,7 @@ const styles = StyleSheet.create({
   },
 
   toInput: {
-    padding: 20,
+    padding: 10,
     flexDirection: 'row',
     borderBottomWidth: 0.2,
     borderColor: 'grey',
@@ -198,6 +208,7 @@ const styles = StyleSheet.create({
 
   input: {
     paddingStart: 10,
+    fontSize: 16,
   },
 
   messageContainer: {
@@ -230,12 +241,13 @@ const styles = StyleSheet.create({
   message: {
     width: '90%',
     padding: 20,
+    fontSize: 16,
   },
 
   send: {
     height: 30,
     width: 30,
-    tintColor: '#22577E',
+    tintColor: '#4268AE',
   },
 });
 

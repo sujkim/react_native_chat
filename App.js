@@ -23,7 +23,7 @@ function App() {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
 
-  const headerColor = '#FFE2E2';
+  const headerColor = '#FA8062';
   // Handle user state changes
   function onAuthStateChanged(user) {
     setUser(user);
@@ -56,6 +56,7 @@ function App() {
             component={ChatDetail}
             options={{
               headerStyle: {backgroundColor: headerColor},
+              headerTintColor: 'white',
               // headerLeft: <Button title="Chats" onPress={() => <Chats />} />,
             }}
           />
@@ -79,16 +80,22 @@ function App() {
       <NavigationContainer>
         <Stack.Navigator>
           <Stack.Screen
+            name="Sign Up"
+            component={SignUp}
+            options={{
+              headerStyle: {backgroundColor: headerColor},
+
+              headerTintColor: 'white',
+            }}
+          />
+          <Stack.Screen
             name="Sign In"
             component={SignIn}
             options={{
               headerStyle: {backgroundColor: headerColor},
+              headerBackVisible: false,
+              headerTintColor: 'white',
             }}
-          />
-          <Stack.Screen
-            name="Sign Up"
-            component={SignUp}
-            options={{headerStyle: {backgroundColor: headerColor}}}
           />
         </Stack.Navigator>
       </NavigationContainer>

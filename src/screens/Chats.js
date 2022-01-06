@@ -40,15 +40,6 @@ const Chats = ({navigation: {navigate}}) => {
   useEffect(() => {
     let isMounted = false;
 
-    const getUserDetails = firestore()
-      .collection('users')
-      .doc(user.uid)
-      .get()
-      .then(documentSnapshot => {
-        setName(documentSnapshot.data().displayName);
-        setAvatar(documentSnapshot.data().photoURL);
-      });
-
     const chat = chatsCollection.orderBy('createdAt', 'desc').onSnapshot(
       {includeMetadataChanges: true},
       querySnapshot => {
@@ -91,7 +82,7 @@ const Chats = ({navigation: {navigate}}) => {
     );
 
     return () => {
-      getUserDetails;
+      // getUserDetails;
       chat;
       isMounted = true;
     };
@@ -107,22 +98,6 @@ const Chats = ({navigation: {navigate}}) => {
 
   return (
     <View style={{flex: 1, backgroundColor: '#F6F6F6'}}>
-      <View
-        style={{
-          alignItems: 'center',
-          padding: 20,
-        }}>
-        <Image
-          source={{
-            uri: user.photoURL,
-          }}
-          style={styles.userImage}
-        />
-        {console.log(avatar)}
-        <Text>{user.displayName}</Text>
-        {console.log(name)}
-      </View>
-
       <View style={styles.header}>
         <Text style={styles.title}>Messages</Text>
         <View style={styles.buttonContainer}>
@@ -172,7 +147,9 @@ const Chats = ({navigation: {navigate}}) => {
                           ? item.fromTo.to.displayName
                           : item.fromTo.from.displayName}
                       </Text>
-                      <Text>{item.message}</Text>
+                      <Text numberOfLines={2} style={{color: 'grey'}}>
+                        {item.message}
+                      </Text>
                     </View>
                   </View>
                   <View>
@@ -197,7 +174,7 @@ const Chats = ({navigation: {navigate}}) => {
   );
 };
 
-const primaryFontColor = '#8785A2';
+const primaryFontColor = '#4268AE';
 const styles = StyleSheet.create({
   buttonContainer: {
     padding: 10,
@@ -206,6 +183,8 @@ const styles = StyleSheet.create({
   button: {
     width: 30,
     height: 30,
+    tintColor: '#4268AE',
+    // overlayColor: '#4268AE',
   },
 
   header: {
@@ -213,6 +192,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingVertical: 20,
   },
 
   title: {
@@ -241,7 +221,7 @@ const styles = StyleSheet.create({
   },
 
   name: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: 'bold',
   },
 
@@ -263,9 +243,7 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 13,
     padding: 5,
-
-    // alignSelf: 'flex-end',
-    // backgroundColor: 'red',
+    color: 'grey',
   },
 });
 

@@ -7,16 +7,22 @@ import {
   StyleSheet,
   Pressable,
   Alert,
+  Button,
+  KeyboardAvoidingViewComponent,
 } from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import {launchImageLibrary} from 'react-native-image-picker';
 import Chats from './Chats';
+
 import KeyboardAvoidingView from 'react-native/Libraries/Components/Keyboard/KeyboardAvoidingView';
 import {useHeaderHeight} from '@react-navigation/elements';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import SignIn from './SignIn';
+import {NavigationHelpersContext} from '@react-navigation/native';
 
-const SignUp = () => {
+const SignUp = ({navigation: {navigate}}) => {
   const [email, onChangeEmail] = useState('');
   const [password, onChangePassword] = useState('');
   const [name, onChangeName] = useState('');
@@ -76,54 +82,61 @@ const SignUp = () => {
 
   return (
     <KeyboardAvoidingView
-      keyboardVerticalOffset={useHeaderHeight() + 25}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{flex: 1}}>
+      verticalKeyboardOffset={useHeaderHeight() + 40}
+      style={{flex: 1}}
+      behavior="padding">
       <View style={styles.body}>
-        <View style={styles.main}>
-          <View style={styles.avatar}>
-            <Image source={{uri: image}} style={styles.image} />
-            <Pressable onPress={() => chooseImage()}>
-              <Image
-                source={require('../assets/add.png')}
-                style={styles.addButton}
-              />
-            </Pressable>
-          </View>
-          <View style={styles.inputs}>
-            <Text style={styles.text}>Name</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeName}
-              value={name}
+        <View style={{}}>
+          <Image source={{uri: image}} style={styles.image} />
+          <Pressable onPress={() => chooseImage()}>
+            <Image
+              source={require('../assets/add.png')}
+              style={styles.addButton}
             />
-            <Text style={styles.text}>Email Address</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeEmail}
-              value={email}
-              keyboardType="email-address"
-              placeholder="name@address.com"
-              autoCapitalize="none"
-            />
+          </Pressable>
+        </View>
 
-            <Text style={styles.text}>Password</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangePassword}
-              value={password}
-              placeholder="Password"
-              secureTextEntry={true}
-            />
-          </View>
+        <View style={styles.inputs}>
+          <Text style={styles.text}>Name</Text>
+          <TextInput
+            style={styles.input}
+            onChangeText={onChangeName}
+            value={name}
+          />
+          <Text style={styles.text}>Email Address</Text>
+          <TextInput
+            style={styles.input}
+            onChangeText={onChangeEmail}
+            value={email}
+            keyboardType="email-address"
+            placeholder="name@address.com"
+            autoCapitalize="none"
+          />
 
-          <View style={styles.spacer}></View>
+          <Text style={styles.text}>Password</Text>
+          <TextInput
+            style={styles.input}
+            onChangeText={onChangePassword}
+            value={password}
+            placeholder="Password"
+            secureTextEntry={true}
+          />
+        </View>
 
-          <View style={styles.buttonContainer}>
-            <Pressable style={styles.button} onPress={() => signUp()}>
-              <Text style={styles.buttonText}>Create Account</Text>
-            </Pressable>
-          </View>
+        <View style={styles.buttonContainer}>
+          <Pressable style={styles.button} onPress={() => signUp()}>
+            <Text style={styles.buttonText}>Create Account</Text>
+          </Pressable>
+        </View>
+        <View style={{flexDirection: 'row'}}>
+          <Text>Already have an account? </Text>
+          <Pressable
+            onPress={() => {
+              console.log('boy');
+              navigate('Sign In');
+            }}>
+            <Text style={{color: '#4268AE'}}>Login</Text>
+          </Pressable>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -132,45 +145,47 @@ const SignUp = () => {
 
 export default SignUp;
 
-const primaryColor = '#8785A2';
+const primaryColor = '#4268AE';
 const styles = StyleSheet.create({
-  avatar: {
-    padding: 40,
-  },
-
   addButton: {
     height: 30,
     width: 30,
     position: 'absolute',
     right: 5,
     bottom: 0,
+    tintColor: primaryColor,
   },
 
   body: {
     flex: 1,
-    height: '80%',
-  },
-
-  main: {
+    // backgroundColor: 'red',
     alignItems: 'center',
+
+    justifyContent: 'space-around',
+    // paddingTop: 30,
+    marginTop: 10,
+    marginBottom: 80,
+    // height: '80%',
   },
 
   inputs: {
-    width: '60%',
+    width: '70%',
+
+    // backgroundColor: 'red',
+    // paddingVertical: 30,
+    // flex: 1,
   },
 
   input: {
-    width: '100%',
+    // width: '100%',
+    borderRadius: 10,
     borderWidth: 0.3,
     padding: 10,
-  },
-
-  spacer: {
-    height: '20%',
+    marginBottom: 3,
   },
 
   image: {
-    backgroundColor: primaryColor,
+    backgroundColor: '#DCDCDC',
     width: 150,
     height: 150,
     borderRadius: 75,
@@ -183,6 +198,8 @@ const styles = StyleSheet.create({
   },
 
   buttonContainer: {
+    // flex: 1,
+    paddingVertical: 30,
     width: '60%',
     alignItems: 'center',
   },

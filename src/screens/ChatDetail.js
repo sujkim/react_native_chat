@@ -166,7 +166,7 @@ export default function ChatDetail({navigation, route}) {
   );
 }
 
-const primaryColor = '#8785A2';
+const primaryColor = '#4268AE';
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
@@ -213,7 +213,6 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    backgroundColor: 'blue',
     width: 40,
     height: 40,
     padding: 20,

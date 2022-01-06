@@ -69,24 +69,28 @@ const SignIn = ({navigation: {navigate}}) => {
       <View style={styles.body}>
         <View style={styles.header}></View>
         <View style={styles.main}>
-          <View style={styles.email}>
-            <Text style={styles.text}>Email Address</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangeEmail}
-              value={email}
-              keyboardType="email-address"
-              placeholder="name@address.com"
-              autoCapitalize="none"
-            />
-            <Text style={styles.text}>Password</Text>
-            <TextInput
-              style={styles.input}
-              onChangeText={onChangePassword}
-              value={password}
-              placeholder="Password"
-              secureTextEntry={true}
-            />
+          <View style={styles.inputs}>
+            <View style={{marginBottom: 3}}>
+              <Text style={styles.text}>Email Address</Text>
+              <TextInput
+                style={styles.input}
+                onChangeText={onChangeEmail}
+                value={email}
+                keyboardType="email-address"
+                placeholder="name@address.com"
+                autoCapitalize="none"
+              />
+            </View>
+            <View>
+              <Text style={styles.text}>Password</Text>
+              <TextInput
+                style={styles.input}
+                onChangeText={onChangePassword}
+                value={password}
+                placeholder="Password"
+                secureTextEntry={true}
+              />
+            </View>
           </View>
 
           <View style={styles.buttons}>
@@ -121,7 +125,7 @@ const SignIn = ({navigation: {navigate}}) => {
 
 export default SignIn;
 
-const buttonColor = '#8785A2';
+const buttonColor = '#4268AE';
 const styles = StyleSheet.create({
   header: {
     width: '100%',
@@ -142,14 +146,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  email: {
-    width: '60%',
+  inputs: {
+    width: '70%',
   },
 
   input: {
     width: '100%',
     borderWidth: 0.3,
-    padding: 10,
+    borderRadius: 10,
+    padding: 15,
   },
 
   image: {
