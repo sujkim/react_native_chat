@@ -1,25 +1,19 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Button,
   Text,
   TextInput,
-  ActivityIndicator,
-  FlatList,
   StyleSheet,
   Image,
   Pressable,
   TouchableOpacity,
 } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import auth from '@react-native-firebase/auth';
-import KeyboardAvoidingView from 'react-native/Libraries/Components/Keyboard/KeyboardAvoidingView';
-import {useHeaderHeight} from '@react-navigation/elements';
-import {clear} from 'react-native/Libraries/LogBox/Data/LogBoxData';
 
-const NewMessage = ({navigation}) => {
+const NewMessage = ({navigation: {navigate}}) => {
   const [to, onChangeTo] = useState(null);
   const [message, onChangeMessage] = useState(null);
   const [receiver, setReceiver] = useState(null);
@@ -61,14 +55,13 @@ const NewMessage = ({navigation}) => {
             },
           },
           fromToArray: [user.email, receiver.email],
-          // fromToArray: [user.uid, receiver.uid],
-          name: user.displayName,
           message: message,
+          uid: user.uid,
           photoURL: user.photoURL,
           createdAt: firestore.FieldValue.serverTimestamp(),
         })
         .then(() => {
-          navigation.navigate('Chats');
+          navigate('Chats');
         });
     }
 
@@ -133,26 +126,32 @@ const NewMessage = ({navigation}) => {
                 if (receiver.email) setSelected(true);
               }}>
               <View style={styles.tile}>
-                <View style={{flexDirection: 'row'}}>
-                  <Image
-                    style={styles.image}
-                    source={{
-                      uri: receiver.photoURL,
-                    }}
-                  />
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  {receiver.photoURL && (
+                    <Image
+                      style={styles.image}
+                      source={{
+                        uri: receiver.photoURL,
+                      }}
+                    />
+                  )}
                   <View>
                     <Text
                       style={{
                         color: selectedText,
                         fontWeight: 'bold',
-                        fontSize: 16,
+                        fontSize: 18,
                       }}>
                       {receiver.displayName}
                     </Text>
-                    <Text style={{color: selectedText}}>{receiver.email}</Text>
+                    {receiver.email && (
+                      <Text style={{color: selectedText}}>
+                        {receiver.email}
+                      </Text>
+                    )}
                   </View>
                 </View>
-                <View>
+                {/* <View>
                   {receiver.email && (
                     <Text
                       style={{
@@ -163,7 +162,7 @@ const NewMessage = ({navigation}) => {
                       Select
                     </Text>
                   )}
-                </View>
+                </View> */}
               </View>
             </Pressable>
           </View>
@@ -235,7 +234,7 @@ const styles = StyleSheet.create({
     width: 40,
     borderRadius: 20,
     marginRight: 20,
-    backgroundColor: '#AEE1E1',
+    backgroundColor: '#4268AE',
   },
 
   message: {

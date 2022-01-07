@@ -14,8 +14,6 @@ import auth from '@react-native-firebase/auth';
 const Chats = ({navigation: {navigate}}) => {
   const [loading, setLoading] = useState(true);
   const [conversations, setConversations] = useState([]);
-  const [name, setName] = useState('');
-  const [avatar, setAvatar] = useState(null);
   const chatsCollection = firestore().collection('chats');
   const user = auth().currentUser;
 
@@ -61,11 +59,11 @@ const Chats = ({navigation: {navigate}}) => {
               const from = item['fromToArray'][0];
               const to = item['fromToArray'][1];
 
-              const other = from == user.email ? to : from;
+              const contact = from == user.email ? to : from;
 
               // group conversations
-              if (!users.includes(other)) {
-                users.push(other);
+              if (!users.includes(contact)) {
+                users.push(contact);
                 conversations.push(item);
               }
             });
@@ -99,8 +97,8 @@ const Chats = ({navigation: {navigate}}) => {
   return (
     <View style={{flex: 1, backgroundColor: '#F6F6F6'}}>
       <View style={styles.header}>
-        <Text style={styles.title}>Messages</Text>
-        <View style={styles.buttonContainer}>
+        <Text style={{fontSize: 30}}>Messages</Text>
+        <View style={{padding: 10}}>
           <Pressable onPress={() => navigate('New Message')}>
             <View style={styles.button}>
               <Image
@@ -113,10 +111,9 @@ const Chats = ({navigation: {navigate}}) => {
       </View>
       <View style={{height: '70%'}}>
         <FlatList
-          style={styles.messages}
           data={conversations}
           renderItem={({item}) => (
-            <View style={styles.container}>
+            <View>
               <Pressable
                 onPress={() =>
                   navigate('Chat Detail', {
@@ -147,7 +144,7 @@ const Chats = ({navigation: {navigate}}) => {
                           ? item.fromTo.to.displayName
                           : item.fromTo.from.displayName}
                       </Text>
-                      <Text numberOfLines={2} style={{color: 'grey'}}>
+                      <Text numberOfLines={1} style={{color: 'grey'}}>
                         {item.message}
                       </Text>
                     </View>
@@ -174,19 +171,7 @@ const Chats = ({navigation: {navigate}}) => {
   );
 };
 
-const primaryFontColor = '#4268AE';
 const styles = StyleSheet.create({
-  buttonContainer: {
-    padding: 10,
-  },
-
-  button: {
-    width: 30,
-    height: 30,
-    tintColor: '#4268AE',
-    // overlayColor: '#4268AE',
-  },
-
   header: {
     marginLeft: 20,
     alignItems: 'center',
@@ -195,42 +180,19 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
 
-  title: {
-    fontSize: 30,
+  button: {
+    width: 30,
+    height: 30,
   },
 
   tile: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    // justifyContent: 'space-between',
     alignItems: 'center',
-    // margin: 10,
+    marginLeft: 10,
     padding: 10,
     borderBottomWidth: 0.3,
-
     borderColor: 'grey',
-
-    // backgroundColor: 'red',
-  },
-
-  main: {
-    marginLeft: 20,
-    justifyContent: 'center',
-    width: '65%',
-    // backgroundColor: 'red',
-  },
-
-  name: {
-    fontSize: 17,
-    fontWeight: 'bold',
-  },
-
-  userImage: {
-    backgroundColor: '#70a1c4',
-    width: 80,
-    height: 80,
-    marginBottom: 10,
-    borderRadius: 40,
   },
 
   image: {
@@ -238,6 +200,17 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
+  },
+
+  main: {
+    marginLeft: 20,
+    justifyContent: 'center',
+    width: '65%',
+  },
+
+  name: {
+    fontSize: 17,
+    fontWeight: 'bold',
   },
 
   date: {

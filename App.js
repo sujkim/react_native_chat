@@ -47,7 +47,7 @@ function App() {
             options={{
               headerTitle: '',
               headerStyle: {backgroundColor: headerColor},
-              headerTitleStyle: {fontSize: 25},
+              // headerTitleStyle: {fontSize: 10},
               headerRight: () => signOutButton(user),
             }}
           />

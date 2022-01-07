@@ -67,7 +67,6 @@ const SignIn = ({navigation: {navigate}}) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{flex: 1}}>
       <View style={styles.body}>
-        <View style={styles.header}></View>
         <View style={styles.main}>
           <View style={styles.inputs}>
             <View style={{marginBottom: 3}}>
@@ -102,11 +101,9 @@ const SignIn = ({navigation: {navigate}}) => {
               <Text style={styles.buttonText}>Sign In</Text>
             </Pressable>
             <Pressable
-              style={[styles.button, styles.signUp]}
+              style={[styles.button, {backgroundColor: '#4268AE'}]}
               onPress={() => navigate('Sign Up')}>
-              <Text style={[styles.buttonText, styles.signUpButtonText]}>
-                Sign Up
-              </Text>
+              <Text style={[styles.buttonText, {color: 'white'}]}>Sign Up</Text>
             </Pressable>
           </View>
         </View>
@@ -125,14 +122,7 @@ const SignIn = ({navigation: {navigate}}) => {
 
 export default SignIn;
 
-const buttonColor = '#4268AE';
 const styles = StyleSheet.create({
-  header: {
-    width: '100%',
-    height: '0%',
-    backgroundColor: '#95D1CC',
-  },
-
   body: {
     flex: 1,
     paddingBottom: 30,
@@ -151,15 +141,9 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    width: '100%',
     borderWidth: 0.3,
     borderRadius: 10,
     padding: 15,
-  },
-
-  image: {
-    width: '10%',
-    height: '10%',
   },
 
   text: {
@@ -174,18 +158,10 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    borderColor: buttonColor,
+    borderColor: '#4268AE',
     borderWidth: 2,
     padding: 15,
     borderRadius: 10,
-  },
-
-  signUp: {
-    backgroundColor: buttonColor,
-  },
-
-  signUpButtonText: {
-    color: 'white',
   },
 
   buttonText: {

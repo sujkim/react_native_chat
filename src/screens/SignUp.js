@@ -7,20 +7,13 @@ import {
   StyleSheet,
   Pressable,
   Alert,
-  Button,
-  KeyboardAvoidingViewComponent,
 } from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import {launchImageLibrary} from 'react-native-image-picker';
-import Chats from './Chats';
-
 import KeyboardAvoidingView from 'react-native/Libraries/Components/Keyboard/KeyboardAvoidingView';
 import {useHeaderHeight} from '@react-navigation/elements';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import SignIn from './SignIn';
-import {NavigationHelpersContext} from '@react-navigation/native';
 
 const SignUp = ({navigation: {navigate}}) => {
   const [email, onChangeEmail] = useState('');
@@ -58,12 +51,11 @@ const SignUp = ({navigation: {navigate}}) => {
           displayName: name,
           photoURL: image,
         });
-        // add user to users database
         addUser();
-      })
-      .then(() => <Chats />);
+      });
   };
 
+  // add user to 'users' database
   const addUser = async () => {
     const user = auth().currentUser;
     await firestore()
@@ -73,7 +65,6 @@ const SignUp = ({navigation: {navigate}}) => {
         email: email.toLowerCase(),
         displayName: name,
         photoURL: image,
-        // uid: user.uid,
       })
       .then(() => {
         console.log('user addded');
@@ -86,7 +77,7 @@ const SignUp = ({navigation: {navigate}}) => {
       style={{flex: 1}}
       behavior="padding">
       <View style={styles.body}>
-        <View style={{}}>
+        <View>
           <Image source={{uri: image}} style={styles.image} />
           <Pressable onPress={() => chooseImage()}>
             <Image
@@ -132,7 +123,6 @@ const SignUp = ({navigation: {navigate}}) => {
           <Text>Already have an account? </Text>
           <Pressable
             onPress={() => {
-              console.log('boy');
               navigate('Sign In');
             }}>
             <Text style={{color: '#4268AE'}}>Login</Text>
@@ -158,26 +148,17 @@ const styles = StyleSheet.create({
 
   body: {
     flex: 1,
-    // backgroundColor: 'red',
     alignItems: 'center',
-
     justifyContent: 'space-around',
-    // paddingTop: 30,
     marginTop: 10,
     marginBottom: 80,
-    // height: '80%',
   },
 
   inputs: {
     width: '70%',
-
-    // backgroundColor: 'red',
-    // paddingVertical: 30,
-    // flex: 1,
   },
 
   input: {
-    // width: '100%',
     borderRadius: 10,
     borderWidth: 0.3,
     padding: 10,
@@ -198,7 +179,6 @@ const styles = StyleSheet.create({
   },
 
   buttonContainer: {
-    // flex: 1,
     paddingVertical: 30,
     width: '60%',
     alignItems: 'center',

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
 import {useHeaderHeight} from '@react-navigation/elements';
 import {
   View,
@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   FlatList,
   StyleSheet,
-  SafeAreaView,
   TextInput,
   TouchableOpacity,
   Image,
@@ -15,12 +14,12 @@ import {
 
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
-import {Header} from 'react-native/Libraries/NewAppScreen';
 
 export default function ChatDetail({navigation, route}) {
   const [loading, setLoading] = useState(true);
   const [chats, setChats] = useState(['']);
   const [message, onChangeMessage] = useState(null);
+  const flatlist = useRef(null);
   const user = auth().currentUser;
   const email = route.params.email;
   const name = route.params.details.displayName;
@@ -29,9 +28,11 @@ export default function ChatDetail({navigation, route}) {
 
   const chatsCollection = firestore().collection('chats');
 
-  React.useLayoutEffect(() => {
+  // set header to contact's name
+  useLayoutEffect(() => {
     navigation.setOptions({
       title: name,
+      headerTitleStyle: {fontSize: 20},
     });
   });
 
@@ -45,10 +46,9 @@ export default function ChatDetail({navigation, route}) {
         },
       },
       fromToArray: [user.email, email],
-      // fromToArray: [user.uid, uid],
-      name: user.displayName,
       message: message,
       photoURL: user.photoURL,
+      uid: user.uid,
       createdAt: firestore.FieldValue.serverTimestamp(),
     });
     onChangeMessage('');
@@ -56,7 +56,7 @@ export default function ChatDetail({navigation, route}) {
 
   useEffect(() => {
     let isMounted = true;
-    const chat = chatsCollection.orderBy('createdAt', 'desc').onSnapshot(
+    const chat = chatsCollection.orderBy('createdAt').onSnapshot(
       querySnapshot => {
         const chats = [];
         querySnapshot.forEach(documentSnapshot => {
@@ -66,7 +66,6 @@ export default function ChatDetail({navigation, route}) {
             (documentSnapshot.get('fromToArray')[0] == email &&
               documentSnapshot.get('fromToArray')[1] == user.email)
           ) {
-            console.log(chats);
             chats.push({
               ...documentSnapshot.data(),
               key: documentSnapshot.id,
@@ -92,9 +91,7 @@ export default function ChatDetail({navigation, route}) {
   if (loading) {
     return (
       <View style={{flex: 1, justifyContent: 'center'}}>
-        <ActivityIndicator style={{flex: 2}} />
-        <View style={{flex: 1}}></View>
-        <View style={{flex: 1}}></View>
+        <ActivityIndicator style={{flex: 1}} />
       </View>
     );
   }
@@ -106,47 +103,47 @@ export default function ChatDetail({navigation, route}) {
       style={{flex: 1}}>
       <View style={{flex: 1, backgroundColor: '#F6F6F6'}}>
         <FlatList
-          inverted
+          ref={flatlist}
+          onContentSizeChange={() =>
+            flatlist.current.scrollToEnd({animated: false})
+          }
+          onLayout={() => flatlist.current.scrollToEnd()}
+          // inverted
           data={chats}
           renderItem={({item}) => (
-            <View style={styles.container}>
+            <View style={{flex: 1}}>
               <View
-                style={
-                  item.fromToArray[0] == user.email ? styles.user : styles.tile
-                }>
+                style={[
+                  styles.tile,
+                  item.uid == user.uid && {flexDirection: 'row-reverse'},
+                ]}>
                 <Image source={{uri: item.photoURL}} style={styles.image} />
                 <View
-                  style={
-                    item.fromToArray[0] == user.email
-                      ? styles.messageBackground
-                      : [
-                          styles.messageBackground,
-                          {
-                            backgroundColor: 'white',
-                          },
-                        ]
-                  }>
+                  style={[
+                    styles.messageBackground,
+                    item.uid != user.uid && {backgroundColor: '#E8E8E8'},
+                  ]}>
                   <Text
-                    style={
-                      item.fromToArray[0] == user.email
-                        ? {color: 'white'}
-                        : {color: 'black'}
-                    }>
+                    style={[
+                      styles.messageText,
+                      item.uid == user.uid && {color: 'white'},
+                    ]}>
                     {item.message}
                   </Text>
                 </View>
 
-                <Text style={{alignSelf: 'center'}}>
-                  {/* {item.createdAt.toDate().toLocaleTimeString()} */}
+                <Text style={styles.time}>
+                  {item.createdAt &&
+                    item.createdAt.toDate().toLocaleTimeString([], {
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    })}
                 </Text>
               </View>
             </View>
           )}
         />
-        {/* <KeyboardAvoidingView
-        behavior="padding"
-        style={{}}
-        keyboardVerticalOffset={useHeaderHeight()}> */}
+
         <View style={styles.messageContainer}>
           <TextInput
             style={styles.message}
@@ -160,7 +157,6 @@ export default function ChatDetail({navigation, route}) {
             <Image source={require('../assets/send.png')} style={styles.send} />
           </TouchableOpacity>
         </View>
-        {/* </KeyboardAvoidingView> */}
       </View>
     </KeyboardAvoidingView>
   );
@@ -173,25 +169,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  container: {
-    flex: 1,
-  },
-
   tile: {
     flexDirection: 'row',
     borderColor: primaryColor,
     padding: 10,
     marginRight: 60,
-  },
-
-  user: {
-    flexDirection: 'row-reverse',
-    marginRight: 60,
-    padding: 10,
-  },
-
-  main: {
-    marginLeft: 30,
   },
 
   messageBackground: {
@@ -200,16 +182,10 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: primaryColor,
     borderRadius: 10,
-    // shadowOpacity: 0.2,
   },
 
   messageText: {
-    color: 'white',
-  },
-
-  name: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 16,
   },
 
   image: {
@@ -220,18 +196,22 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 
-  date: {
+  time: {
     fontSize: 10,
+    color: 'grey',
+    alignSelf: 'flex-end',
   },
 
   messageContainer: {
-    marginVertical: 30,
+    marginBottom: 30,
+    marginTop: 10,
     flexDirection: 'row',
     alignItems: 'center',
     width: '90%',
     borderWidth: 0.3,
     borderRadius: 20,
     alignSelf: 'center',
+    backgroundColor: 'white',
   },
 
   message: {
