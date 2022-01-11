@@ -13,7 +13,7 @@ import firestore from '@react-native-firebase/firestore';
 
 import auth from '@react-native-firebase/auth';
 
-const NewMessage = ({navigation: {navigate}}) => {
+const NewMessage = ({navigation, navigation: {navigate}}) => {
   const [to, onChangeTo] = useState(null);
   const [message, onChangeMessage] = useState(null);
   const [receiver, setReceiver] = useState(null);

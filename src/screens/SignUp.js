@@ -7,10 +7,13 @@ import {
   StyleSheet,
   Pressable,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
+import {utils} from '@react-native-firebase/app';
 import {launchImageLibrary} from 'react-native-image-picker';
 import KeyboardAvoidingView from 'react-native/Libraries/Components/Keyboard/KeyboardAvoidingView';
 import {useHeaderHeight} from '@react-navigation/elements';
@@ -19,12 +22,36 @@ const SignUp = ({navigation: {navigate}}) => {
   const [email, onChangeEmail] = useState('');
   const [password, onChangePassword] = useState('');
   const [name, onChangeName] = useState('');
+  const [uri, setUri] = useState(null);
+  const [imageRef, setImageRef] = useState(null);
   const [image, setImage] = useState(null);
 
   // choose photo from album
   async function chooseImage() {
-    response = await launchImageLibrary();
-    setImage(response.assets[0].uri);
+    try {
+      let response = await launchImageLibrary();
+      setUri(response.assets[0].uri);
+      await setProfile(response.assets[0].uri);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // upload image to firebase storage and retrieve download url
+  async function setProfile(uri) {
+    console.log('uri in upload function', uri);
+    let filename = uri.substring(uri.lastIndexOf('/') + 1);
+    imageRef = storage().ref('profile:' + filename);
+    setImageRef(imageRef);
+    try {
+      imageRef.putFile(uri.replace('file://', '')).then(async () => {
+        const url = await imageRef.getDownloadURL();
+        setImage(url);
+        return url;
+      });
+    } catch (error) {
+      console.log('upload error', error);
+    }
   }
 
   const signUp = () => {
@@ -78,7 +105,7 @@ const SignUp = ({navigation: {navigate}}) => {
       behavior="padding">
       <View style={styles.body}>
         <View>
-          <Image source={{uri: image}} style={styles.image} />
+          <Image source={{uri: uri}} style={styles.image} />
           <Pressable onPress={() => chooseImage()}>
             <Image
               source={require('../assets/add.png')}

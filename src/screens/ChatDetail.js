@@ -194,6 +194,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 20,
     overflow: 'hidden',
+    backgroundColor: '#DCDCDC',
   },
 
   time: {
