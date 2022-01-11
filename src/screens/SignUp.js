@@ -21,7 +21,6 @@ const SignUp = ({navigation: {navigate}}) => {
   const [password, onChangePassword] = useState('');
   const [name, onChangeName] = useState('');
   const [uri, setUri] = useState(null);
-  const [imageRef, setImageRef] = useState(null);
   const [image, setImage] = useState(null);
 
   // choose photo from album
@@ -40,7 +39,7 @@ const SignUp = ({navigation: {navigate}}) => {
     console.log('uri in upload function', uri);
     let filename = uri.substring(uri.lastIndexOf('/') + 1);
     let imageRef = storage().ref('profile:' + filename);
-    setImageRef(imageRef);
+
     try {
       imageRef.putFile(uri.replace('file://', '')).then(async () => {
         const url = await imageRef.getDownloadURL();
