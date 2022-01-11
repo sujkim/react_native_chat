@@ -27,7 +27,7 @@ const SignUp = ({navigation: {navigate}}) => {
   // choose photo from album
   async function chooseImage() {
     try {
-      let response = await launchImageLibrary();
+      let response = await launchImageLibrary({maxWidth: 200, maxHeight: 200});
       setUri(response.assets[0].uri);
       await setProfile(response.assets[0].uri);
     } catch (error) {
