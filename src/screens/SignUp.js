@@ -7,13 +7,11 @@ import {
   StyleSheet,
   Pressable,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
-import {utils} from '@react-native-firebase/app';
 import {launchImageLibrary} from 'react-native-image-picker';
 import KeyboardAvoidingView from 'react-native/Libraries/Components/Keyboard/KeyboardAvoidingView';
 import {useHeaderHeight} from '@react-navigation/elements';
@@ -41,12 +39,13 @@ const SignUp = ({navigation: {navigate}}) => {
   async function setProfile(uri) {
     console.log('uri in upload function', uri);
     let filename = uri.substring(uri.lastIndexOf('/') + 1);
-    imageRef = storage().ref('profile:' + filename);
+    let imageRef = storage().ref('profile:' + filename);
     setImageRef(imageRef);
     try {
       imageRef.putFile(uri.replace('file://', '')).then(async () => {
         const url = await imageRef.getDownloadURL();
         setImage(url);
+        console.log('url', url);
         return url;
       });
     } catch (error) {
@@ -74,11 +73,14 @@ const SignUp = ({navigation: {navigate}}) => {
       })
       .then(() => {
         // add name and photo to profile
-        auth().currentUser.updateProfile({
-          displayName: name,
-          photoURL: image,
-        });
-        addUser();
+        auth()
+          .currentUser.updateProfile({
+            displayName: name,
+            photoURL: image,
+          })
+          .catch(error => console.log(error))
+          .then(() => addUser());
+        // addUser();
       });
   };
 

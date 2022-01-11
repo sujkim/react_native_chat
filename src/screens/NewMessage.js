@@ -101,6 +101,7 @@ const NewMessage = ({navigation, navigation: {navigate}}) => {
                 placeholder="name@email.com"
                 autoCapitalize="none"
                 autoFocus={true}
+                keyboardType="email-address"
                 onSubmitEditing={() => searchUser()}
                 returnKeyType="search"
                 defaultValue={receiver.displayName}
@@ -111,6 +112,7 @@ const NewMessage = ({navigation, navigation: {navigate}}) => {
                 onChangeText={onChangeTo}
                 value={to}
                 placeholder="name@email.com"
+                keyboardType="email-address"
                 autoCapitalize="none"
                 autoFocus={true}
                 onSubmitEditing={() => searchUser()}
